@@ -16,7 +16,7 @@
 
 RF24 radio(7, 8); // CE, CSN
 const byte Encoder_address[6] = "00001";          //the address used to write to the encoder arduino board
-const byte Shutteraddress[6] = "000002";          //the address used to write to the shutter arduino board
+const byte Shutter_address[6] = "00002";          //the address used to write to the shutter arduino board
 String  ReceivedData  = "";
 
 
