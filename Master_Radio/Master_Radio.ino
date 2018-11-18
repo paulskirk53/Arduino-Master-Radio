@@ -8,7 +8,7 @@
 //
 
 #include <SPI.h>
-#include <nRF24L01.h>
+//#include <nRF24L01.h>
 #include <RF24.h>
 #include <SoftwareSerial.h>
 
@@ -27,7 +27,7 @@ void setup()
   //pinMode(PIN10, OUTPUT);      // this is an NRF24L01 requirement if pin 10 is not used
   Serial.begin(9600);            // this module uses the serial channel to Tx/ Rx commands from the Dome driver
 
-  //radio.setChannel(0x66); //ensure it matches the target host causes sketch to hang
+ // radio.setChannel(0x02); //ensure it matches the target host causes sketch to hang
   radio.begin();
   radio.enableAckPayload();
 
@@ -44,6 +44,7 @@ void setup()
 
 void loop()
 {
+  
   //Serial.print("serial test ");     // test used in v early stages
   if (Serial.available() > 0)         // the dome driver has sent a command
   {
