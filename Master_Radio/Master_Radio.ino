@@ -20,14 +20,14 @@ const byte Shutter_address[6] = "00002";          //the address used to write to
 String  ReceivedData  = "";
 
 
-double RemoteResponse = 0.0;
+double Azimuth = 0.0;
 
 void setup()
 {
   //pinMode(PIN10, OUTPUT);      // this is an NRF24L01 requirement if pin 10 is not used
   Serial.begin(9600);            // this module uses the serial channel to Tx/ Rx commands from the Dome driver
 
- // radio.setChannel(0x02); //ensure it matches the target host causes sketch to hang
+  // radio.setChannel(0x02); //ensure it matches the target host causes sketch to hang
   radio.begin();
   radio.enableAckPayload();
 
@@ -44,7 +44,7 @@ void setup()
 
 void loop()
 {
-  
+
   //Serial.print("serial test ");     // test used in v early stages
   if (Serial.available() > 0)         // the dome driver has sent a command
   {
@@ -57,7 +57,7 @@ void loop()
        model these on the previous compass code
        each node will receive the transmission and respond on the pipe address
     */
-//ReceivedData.equalsIgnoreCase("AZ")
+    //ReceivedData.equalsIgnoreCase("AZ")
     if ((ReceivedData.equalsIgnoreCase("AZ")) || (ReceivedData.equalsIgnoreCase("SA")) || (ReceivedData.equalsIgnoreCase("SL")))
     {
 
@@ -76,11 +76,15 @@ void loop()
         {
 
           // read ack payload and copy data to the remoteresponse variable
-          radio.read(&RemoteResponse, sizeof(RemoteResponse));
+          radio.read(&Azimuth, sizeof(Azimuth));
 
           Serial.println("[+] Successfully received data from node: ");
-          Serial.print("The response was ");
-          Serial.println(RemoteResponse);
+          Serial.print("The azimuth returned was ");
+
+          Serial.print (String(Azimuth, 2)); //call the function and print the angle returned to serial
+          Serial.println("#");               // print the string terminator
+
+          // Serial.println(RemoteResponse);
           // Serial.print("The data rate is ");
           // Serial.println(radio.getDataRate());
 
