@@ -63,7 +63,7 @@ void loop()
 
     }
 
-    if (ReceivedData.startsWith("OS", 0))   // fill this area for open shutter
+    if (ReceivedData.equalsIgnoreCase("OS"))   // fill this area for open shutter
     {
       radio.openWritingPipe(Shutter_address);
       SendTheCommand();
@@ -71,14 +71,14 @@ void loop()
 
     }
 
-    if (ReceivedData.startsWith("CS", 0))   // fill this area for close shutter
+    if (ReceivedData.equalsIgnoreCase("CS"))   // fill this area for close shutter
     {
       radio.openWritingPipe(Shutter_address);
       SendTheCommand();
 
 
     }
-    if (ReceivedData.startsWith("SS", 0))   // fill this area for shutter status
+    if (ReceivedData.equalsIgnoreCase("SS"))   // fill this area for shutter status
     {
       radio.openWritingPipe(Shutter_address);
       SendTheCommand();

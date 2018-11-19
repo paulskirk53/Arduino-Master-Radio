@@ -10,4 +10,5 @@
 // three writes before a radio.receive is executed, the sketch will hang.
 //The sketch is maintaine in github - https://github.com/paulskirk53/Arduino-Master-Radio
 // there is inline documentation in key areas
-
+// known bugs:
+// if there is a tx failure sending 'SS', the code returns 'open'
