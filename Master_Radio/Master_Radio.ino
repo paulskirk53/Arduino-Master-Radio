@@ -5,7 +5,7 @@
 // in boiler this board is UNo port 6
 // working transmitter code
 // works with Radio_Receiver1 as tested 13/11/18
-//
+//works with channel 100 and 25kbps on master and basicnode2comm
 
 #include <SPI.h>
 #include <RF24.h>
@@ -13,25 +13,25 @@
 
 #define PIN10  10
 
-RF24 radio(7, 8); // CE, CSN
+RF24 radio(7, 8);                                 // CE, CSN
 const byte Encoder_address[6] = "00001";          //the address used to write to the encoder arduino board
 const byte Shutter_address[6] = "00002";          //the address used to write to the shutter arduino board
 String  ReceivedData  = "";
 String Message = "";
 bool tx_sent;
-
+char theCommand[32] = "";                   // confusingly, you can initialise a char array in this way, but later in code, it is not possible to assign in this way.
 double ReceivedPayload = 0.0;
 
 void setup()
 {
   //pinMode(PIN10, OUTPUT);      // this is an NRF24L01 requirement if pin 10 is not used
   Serial.begin(9600);            // this module uses the serial channel to Tx/ Rx commands from the Dome driver
-
-  // radio.setChannel(0x02); //ensure it matches the target host causes sketch to hang
   radio.begin();
+  radio.setChannel(100); //ensure it matches the target host causes sketch to hang
+
   radio.enableAckPayload();
 
-  //  radio.setDataRate(RF24_250KBPS);  // set RF datarate didn't work with the + devices either
+  radio.setDataRate(RF24_250KBPS);  // set RF datarate didn't work with the + devices either
 
 
 
@@ -44,19 +44,31 @@ void setup()
 
 void loop()
 {
+  // initialises the character array used to store the commands AZ, SA, SL, OS, CS and SS
+  theCommand[0] = 0;                                // only first 3 characters used in this sketch
+  theCommand[1] = 0;                                // arduino uses zero as null character - no quotes
+  theCommand[2] = 0;
 
-  //Serial.print("serial test ");     // test used in v early stages
   if (Serial.available() > 0)         // the dome driver has sent a command
   {
     // Serial.print("Radio channel used is ");
     // Serial.println(radio.getChannel());
-    ReceivedData = Serial.readStringUntil('#');
-
+    ReceivedData = Serial.readStringUntil('#');            // the string does not contain the # character
 
     //ReceivedData.equalsIgnoreCase("AZ")
     if ((ReceivedData.equalsIgnoreCase("AZ")) || (ReceivedData.equalsIgnoreCase("SA")) || (ReceivedData.equalsIgnoreCase("SL")))
     {
+
+      //these thre commands all just require the azimuth to be returned, so just send AZ# as the command for all three
+
       radio.openWritingPipe(Encoder_address);
+      theCommand[0] = 'A';                                // note single quote use
+      theCommand[1] = 'Z';
+      theCommand[2] = '#';
+
+
+      Serial.print ("theCommand contains  ");
+      Serial.println(theCommand);                      // print the string terminator
       SendTheCommand();
       ReceiveTheResponse();
       TransmitToDriver();
@@ -66,6 +78,9 @@ void loop()
     if (ReceivedData.equalsIgnoreCase("OS"))   // fill this area for open shutter
     {
       radio.openWritingPipe(Shutter_address);
+      theCommand[0] = 'O';                                // note single quote use
+      theCommand[1] = 'S';
+      theCommand[2] = '#';
       SendTheCommand();
 
 
@@ -74,6 +89,9 @@ void loop()
     if (ReceivedData.equalsIgnoreCase("CS"))   // fill this area for close shutter
     {
       radio.openWritingPipe(Shutter_address);
+      theCommand[0] = 'C';                                // note single quote use
+      theCommand[1] = 'S';
+      theCommand[2] = '#';
       SendTheCommand();
 
 
@@ -81,6 +99,9 @@ void loop()
     if (ReceivedData.equalsIgnoreCase("SS"))   // fill this area for shutter status
     {
       radio.openWritingPipe(Shutter_address);
+      theCommand[0] = 'S';                                // note single quote use
+      theCommand[1] = 'S';
+      theCommand[2] = '#';
       SendTheCommand();
       ReceiveTheResponse();
       // this is the only part of the shutter code which returns a value.
@@ -98,18 +119,18 @@ void loop()
         Serial.println("#");                      // print the string terminator
       }
 
-    }
-  } // end if receiveddata.startswith
+    }// end if receiveddata.startswith
 
-  //end if serial available
-}
+  } //end if serial available
+
+} //end void loop
 
 void SendTheCommand()
 {
-
-  tx_sent = radio.write(&ReceivedData, sizeof(ReceivedData));
+  //bool tx_sent;
+  tx_sent = radio.write(&theCommand, sizeof(theCommand));
   Serial.print("The text sent was ");
-  Serial.println(ReceivedData);
+  Serial.println(theCommand);
   ReceivedData = "";
 
 
