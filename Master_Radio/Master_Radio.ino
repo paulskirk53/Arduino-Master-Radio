@@ -13,14 +13,14 @@
 
 #define PIN10  10
 
-RF24 radio(7, 8);                                 // CE, CSN
-const byte Encoder_address[6] = "00001";          //the address used to write to the encoder arduino board
-const byte Shutter_address[6] = "00002";          //the address used to write to the shutter arduino board
-String  ReceivedData  = "";
-String Message = "";
-bool tx_sent;
-char theCommand[32] = "";                   // confusingly, you can initialise a char array in this way, but later in code, it is not possible to assign in this way.
-double ReceivedPayload = 0.0;
+  RF24 radio(7, 8);                                 // CE, CSN
+  const byte Encoder_address[6] = "00001";          //the address used to write to the encoder arduino board
+  const byte Shutter_address[6] = "00002";          //the address used to write to the shutter arduino board
+  String  ReceivedData  = "";
+  String Message = "";
+  bool tx_sent;
+  char theCommand[32] = "";                   // confusingly, you can initialise a char array in this way, but later in code, it is not possible to assign in this way.
+  double ReceivedPayload = 0.0;
 
 void setup()
 {
@@ -106,7 +106,7 @@ void loop()
       ReceiveTheResponse();
       // this is the only part of the shutter code which returns a value.
       // the payload will be 0 or 1, the driver requires 'open' or closed' so transpose appropriately
-      if (ReceivedPayload == 1)
+      if (ReceivedPayload == 1.0)
       {
         Message = "closed";                        //the shutter is closed
         Serial.print (Message);                    //print value to serial, for the driver
