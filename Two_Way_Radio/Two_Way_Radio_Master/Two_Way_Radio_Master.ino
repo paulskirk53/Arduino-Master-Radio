@@ -1,7 +1,7 @@
 //this is the MASTER
 //experiment to try a two way radio comms without using the ackpayload feature
 // hopefully will make comms more straightforward
-// 
+//
 
 #include <SPI.h>
 #include <RF24.h>
@@ -104,20 +104,8 @@ void loop()
       theCommand[2] = '#';
       SendTheCommand();                                  // ok to here
       ReceiveTheResponse();
-      // this is the only part of the shutter code which returns a value.
-      // the payload will be 0 or 1, the driver requires 'open' or closed' so transpose appropriately
-      if (ReceivedPayload == 1.0)
-      {
-        Message = "closed";                        //the shutter is closed
-        Serial.print (Message);                    //print value to serial, for the driver
-        Serial.println("#");                      // print the string terminator
-      }
-      else
-      {
-        Message = "open";       //the shutter is open
-        Serial.print (Message); //print value to serial, for the driver
-        Serial.println("#");                      // print the string terminator
-      }
+      TransmitToDriver();
+
 
     }// end if receiveddata.startswith
 
@@ -143,7 +131,7 @@ void ReceiveTheResponse()
     radio.openReadingPipe(1, Master_address);     //NEED 1 for shared addresses
     radio.startListening();
     while (!radio.available())
-    {}
+    {}                                           // do nothing
     if (radio.available())
     {
       radio.read(&response, sizeof(response));
