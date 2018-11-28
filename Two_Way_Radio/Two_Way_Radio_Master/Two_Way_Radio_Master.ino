@@ -1,11 +1,7 @@
-
-//    Name:       Master_Radio.ino
-//    Created:	11/11/2018 18:22:57
-//    Author:     DESKTOP-OCFJAV9\Paul
-// in boiler this board is UNo port 6
-// working transmitter code
-// works with Radio_Receiver1 as tested 13/11/18
-//works with channel 100 and 25kbps on master and basicnode2comm
+//this is the MASTER
+//experiment to try a two way radio comms without using the ackpayload feature
+// hopefully will make comms more straightforward
+// 
 
 #include <SPI.h>
 #include <RF24.h>
@@ -13,14 +9,18 @@
 
 #define PIN10  10
 
-  RF24 radio(7, 8);                                 // CE, CSN
-  const byte Encoder_address[6] = "00001";          //the address used to write to the encoder arduino board
-  const byte Shutter_address[6] = "00002";          //the address used to write to the shutter arduino board
-  String  ReceivedData  = "";
-  String Message = "";
-  bool tx_sent;
-  char theCommand[32] = "";                   // confusingly, you can initialise a char array in this way, but later in code, it is not possible to assign in this way.
-  double ReceivedPayload = 0.0;
+RF24 radio(7, 8);                                 // CE, CSN
+const byte Encoder_address[6] = "00001";          //the address used to write to the encoder arduino board
+const byte Shutter_address[6] = "00002";          //the address used to write to the shutter arduino board
+const byte Master_address[6] = "00000";
+String  ReceivedData  = "";
+String Message = "";
+String stringtosend;
+
+bool tx_sent;
+char theCommand[32] = "";                   // confusingly, you can initialise a char array in this way, but later in code, it is not possible to assign in this way.
+double ReceivedPayload = 0.0;
+char response[32] = "";
 
 void setup()
 {
@@ -59,7 +59,7 @@ void loop()
     if ((ReceivedData.equalsIgnoreCase("AZ")) || (ReceivedData.equalsIgnoreCase("SA")) || (ReceivedData.equalsIgnoreCase("SL")))
     {
 
-      //these thre commands all just require the azimuth to be returned, so just send AZ# as the command for all three
+      //these three commands all just require the azimuth to be returned, so just send AZ# as the command for all three
 
       radio.openWritingPipe(Encoder_address);
       theCommand[0] = 'A';                                // note single quote use
@@ -67,8 +67,8 @@ void loop()
       theCommand[2] = '#';
 
 
-      Serial.print ("theCommand contains  ");
-      Serial.println(theCommand);                      // print the string terminator
+      //Serial.print ("theCommand contains  ");
+      //Serial.println(theCommand);                      // print the string terminator
       SendTheCommand();
       ReceiveTheResponse();
       TransmitToDriver();
@@ -81,7 +81,7 @@ void loop()
       theCommand[0] = 'O';                                // note single quote use
       theCommand[1] = 'S';
       theCommand[2] = '#';
-      SendTheCommand();
+      SendTheCommand();         // this command works as part of the 2 way
 
 
     }
@@ -102,7 +102,7 @@ void loop()
       theCommand[0] = 'S';                                // note single quote use
       theCommand[1] = 'S';
       theCommand[2] = '#';
-      SendTheCommand();
+      SendTheCommand();                                  // ok to here
       ReceiveTheResponse();
       // this is the only part of the shutter code which returns a value.
       // the payload will be 0 or 1, the driver requires 'open' or closed' so transpose appropriately
@@ -127,7 +127,7 @@ void loop()
 
 void SendTheCommand()
 {
-  //bool tx_sent;
+
   tx_sent = radio.write(&theCommand, sizeof(theCommand));
   Serial.print("The text sent was ");
   Serial.println(theCommand);
@@ -140,13 +140,15 @@ void ReceiveTheResponse()
 {
   if (tx_sent)
   {
-    if (radio.isAckPayloadAvailable())   // tests if the remote device has acknowledged and its
-      // acknowledge payload (i.e its response )is available
+    radio.openReadingPipe(1, Master_address);     //NEED 1 for shared addresses
+    radio.startListening();
+    while (!radio.available())
+    {}
+    if (radio.available())
     {
-
-      // read ack payload and copy data to the remoteresponse variable
-      radio.read(&ReceivedPayload, sizeof(ReceivedPayload));
-
+      radio.read(&response, sizeof(response));
+      radio.stopListening();
+      stringtosend = String(response);                  // convert char to string for sending to driver
     }
   }
   else
@@ -159,10 +161,13 @@ void ReceiveTheResponse()
 }
 void TransmitToDriver()
 {
-  Serial.println("[+] Successfully received data from node: ");
-  Serial.print("The ReceivedPayload returned was ");
 
-  Serial.print (String(ReceivedPayload, 2)); //print value to serial, for the driver
+
+  // need to change response to string i.e char to string
+  Serial.println("[+] Successfully received data from node: ");
+  Serial.print("The Transmit to driver message is ");
+
+  Serial.print (stringtosend); //print value to serial, for the driver
   Serial.println("#");                      // print the string terminator
 
 }
