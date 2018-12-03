@@ -151,8 +151,8 @@ void SendTheCommand()
 
   radio.startListening();                         //put after the radio write so that no delay to start listening for response
 
-  Serial.print("The text sent was ");
-  Serial.println(theCommand);
+  //Serial.print("The text sent was ");
+  //Serial.println(theCommand);
   // Serial.println("---------------------------------------------");
   ReceivedData = "";
 
@@ -171,11 +171,16 @@ void ReceiveTheResponse()
 
     unsigned long currentMillis;
     unsigned long prevMillis;
-    unsigned long txIntervalMillis = 500; // send once per second
+    unsigned long txIntervalMillis = 500; // wait 0.5 seconds to see if a response will be received
     prevMillis = millis();
     while (!radio.available())
     {
-      //Serial.println("stuck in here...");
+      //this while loop was originally empty and just waited for radio to become available. However a bug occurred which meant 
+      //this section of code was introduced as a cure.
+      //The bug was: if az was sent twice in a row followed by ss, the program was locked in this (empty as was ) loop.
+      //apparently there was no radio available, even though the shutter arduino code reported to its serial monitor that a response had been sent. It was very perplexing.
+      // it can be seen that this code is designed to resend the command previously sent if there is no response within 0.5 seconds.
+      
       currentMillis = millis();
       if (currentMillis - prevMillis > txIntervalMillis)
       {
@@ -199,35 +204,8 @@ void ReceiveTheResponse()
   else
   {
     stringtosend = "";
-    Serial.print("[-] The transmission to the selected node failed.");
-    /*  the code below didn't seem to work
-        bool tx_ok, tx_fail, rx_ready;
-        String txokmessage = "nothing", txfailmessage = "nothing", rxreadymessage = "nothing";
-
-        radio.whatHappened(tx_ok, tx_fail, rx_ready);
-
-        if (tx_ok)
-        {
-          txokmessage = "the send was successful";
-        }
-
-
-        if (tx_fail)
-        {
-          txfailmessage = "the send failed - too many retries";
-        }
-        if (rx_ready)
-        {
-          rxreadymessage = "there is a message waiting to be read";
-        }
-
-
-        Serial.println(" ");
-        Serial.println("-------------------------------------- ");
-        Serial.println("this is what happened tx-ok, tx-fail, rx_ready ");
-        Serial.println(txokmessage + "  " + txfailmessage + "  " + rxreadymessage);
-        Serial.println("-------------------------------------- ");
-    */
+    Serial.println("[-] The transmission to the selected node failed.");
+    
   }
 
 
@@ -238,11 +216,11 @@ void TransmitToDriver()
 
 
   // need to change response to string i.e char to string
-  Serial.println("[+] Successfully received data from node: ");
-  Serial.print("The Transmit to driver message is ");
+  
+  Serial.print("The message sent to the driver was ");
 
   Serial.print (stringtosend); //print value to serial, for the driver
-  Serial.println("#");                      // print the string terminator
+  //Serial.println("#");                      // print the string terminator
   Serial.println("--------------------------------------------------------");
 
 }
