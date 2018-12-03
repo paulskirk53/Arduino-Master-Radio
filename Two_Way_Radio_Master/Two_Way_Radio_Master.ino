@@ -1,6 +1,6 @@
 //this is the MASTER reviewed and checked for process on Sunday 2-12 @12.37 see below
 // needs stable power supply
-//bug 2 hashes added to command - 
+//bug 2 hashes added to command -
 // sequence needs to be this for master
 /*
   open the write pipe for the correct address - encoder or shutter
@@ -9,8 +9,8 @@
   immediately start listening
   receive the response
 
-made changes such that we stoplistening - write - startlistening in that order to avoid periods where there is no listening and the slaves
-may be writing
+  made changes such that we stoplistening - write - startlistening in that order to avoid periods where there is no listening and the slaves
+  may be writing
 
 */
 //
@@ -24,9 +24,9 @@ may be writing
 #define PIN10  10
 
 RF24 radio(7, 8);                                 // CE, CSN
-const byte Encoder_address[6] = "00001";          //the address used to write to the encoder arduino board
-const byte Shutter_address[6] = "00002";          //the address used to write to the shutter arduino board
-const byte Master_address[6] = "00000";
+const byte Encoder_address[6] = "encod";          //the address used to write to the encoder arduino board
+const byte Shutter_address[6] = "shutt";          //the address used to write to the shutter arduino board
+const byte Master_address[6] = "mastr";
 String  ReceivedData  = "";
 String Message = "";
 String stringtosend;
@@ -60,7 +60,7 @@ void loop()
   //  while(1);{}  //just used to stop everything in order to view the print.details
 
 
-  
+
   // initialise the character array used to store the commands AZ, SA, SL, OS, CS and SS
   // only first 3 characters used in this sketch
   // arduino uses zero as null character - no quotes
@@ -153,7 +153,7 @@ void SendTheCommand()
 
   Serial.print("The text sent was ");
   Serial.println(theCommand);
-  Serial.println("---------------------------------------------");
+  // Serial.println("---------------------------------------------");
   ReceivedData = "";
 
 
@@ -165,23 +165,40 @@ void ReceiveTheResponse()
   {
     Serial.print("the command was...");
     Serial.println(theCommand);
-    delay(4000);
+    //delay(1000);
+    // try if radio not avalable (following tx_sent is true, retransmit the last command:
 
+
+    unsigned long currentMillis;
+    unsigned long prevMillis;
+    unsigned long txIntervalMillis = 500; // send once per second
+    prevMillis = millis();
     while (!radio.available())
     {
       //Serial.println("stuck in here...");
+      currentMillis = millis();
+      if (currentMillis - prevMillis > txIntervalMillis)
+      {
+        Serial.println("retry ");
+        Serial.println(currentMillis - prevMillis);
+        SendTheCommand();
+        prevMillis = currentMillis ; //restart the timer
+      }
+
+
     }                                           // do nothing
 
     if (radio.available())  // nrf radio is only available if the complete TX was successful - datasheet
     {
       radio.read(&response, sizeof(response));
-      radio.stopListening(); //no need to stop listening here as the stop listening command is issued before each openwriting pipe, but it could
+      //radio.stopListening(); //no need to stop listening here as the stop listening command is issued before each openwriting pipe, but it could
       //stop noise entering the radio read buffer perhaps - no harm
       stringtosend = String(response);                  // convert char to string for sending to driver
     }
   }
   else
   {
+    stringtosend = "";
     Serial.print("[-] The transmission to the selected node failed.");
     /*  the code below didn't seem to work
         bool tx_ok, tx_fail, rx_ready;
@@ -213,7 +230,7 @@ void ReceiveTheResponse()
     */
   }
 
-  Serial.println("--------------------------------------------------------");
+
 
 }
 void TransmitToDriver()
@@ -226,5 +243,6 @@ void TransmitToDriver()
 
   Serial.print (stringtosend); //print value to serial, for the driver
   Serial.println("#");                      // print the string terminator
+  Serial.println("--------------------------------------------------------");
 
 }
