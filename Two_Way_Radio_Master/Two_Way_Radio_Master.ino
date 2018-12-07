@@ -46,7 +46,7 @@ void setup()
   radio.setChannel(100); //ensure it matches the target host causes sketch to hang
   radio.enableAckPayload();
   radio.setDataRate(RF24_250KBPS);  // set RF datarate didn't work with the + devices either
-  radio.setPALevel(RF24_PA_MIN);
+  radio.setPALevel(RF24_PA_LOW);
   radio.setRetries(15, 15);           // time between tries and No of tries
   radio.enableDynamicPayloads();     // needs this for acknowledge to work
   radio.openReadingPipe(1, Master_address);     //NEED 1 for shared addresses
@@ -55,16 +55,16 @@ void setup()
 
 void loop()
 {
-  //  radio.printDetails();
+  /*  radio.printDetails();
 
-  //  while(1);{}  //just used to stop everything in order to view the print.details
+    while(1);{}  //just used to stop everything in order to view the print.details
 
 
 
-  // initialise the character array used to store the commands AZ, SA, SL, OS, CS and SS
-  // only first 3 characters used in this sketch
-  // arduino uses zero as null character - no quotes
-
+   initialise the character array used to store the commands AZ, SA, SL, OS, CS and SS
+   only first 3 characters used in this sketch
+   arduino uses zero as null character - no quotes
+*/
   initialisethecommand_to_null();
 
   if (Serial.available() > 0)         // the dome driver has sent a command
@@ -165,39 +165,40 @@ void ReceiveTheResponse()
   {
     Serial.print("the command was...");
     Serial.println(theCommand);
-    //delay(1000);
-    // try if radio not avalable (following tx_sent is true, retransmit the last command:
-
+   
 
     unsigned long currentMillis;
     unsigned long prevMillis;
-    unsigned long txIntervalMillis = 500; // wait 0.5 seconds to see if a response will be received
+    unsigned long txIntervalMillis = 300; // wait 0.3 seconds to see if a response will be received
+    
     prevMillis = millis();
     while (!radio.available())
     {
-      //this while loop was originally empty and just waited for radio to become available. However a bug occurred which meant 
-      //this section of code was introduced as a cure.
-      //The bug was: if az was sent twice in a row followed by ss, the program was locked in this (empty as was ) loop.
-      //apparently there was no radio available, even though the shutter arduino code reported to its serial monitor that a response had been sent. It was very perplexing.
-      // it can be seen that this code is designed to resend the command previously sent if there is no response within 0.5 seconds.
-      
+	/*
+      this while loop was originally empty and just waited for radio to become available. However a bug occurred which meant 
+      this section of code was introduced as a bug fix.
+      The bug was: if az was sent twice in a row followed by ss, the program was locked in this (empty as was ) loop.
+      apparently there was no radio available, even though the shutter arduino code reported to its serial monitor that a response had been sent. It was very perplexing.
+       it can be seen that this code is designed to resend the command previously sent if there is no response within 0.5 seconds.
+    */
+	  
       currentMillis = millis();
       if (currentMillis - prevMillis > txIntervalMillis)
       {
         Serial.println("retry ");
         Serial.println(currentMillis - prevMillis);
         SendTheCommand();
-        prevMillis = currentMillis ; //restart the timer
+        prevMillis = currentMillis ; //reset the timer
       }
 
 
-    }                                           // do nothing
+    }                                           // end while
 
     if (radio.available())  // nrf radio is only available if the complete TX was successful - datasheet
     {
       radio.read(&response, sizeof(response));
-      //radio.stopListening(); //no need to stop listening here as the stop listening command is issued before each openwriting pipe, but it could
-      //stop noise entering the radio read buffer perhaps - no harm
+      //radio.stopListening(); 
+      
       stringtosend = String(response);                  // convert char to string for sending to driver
     }
   }
@@ -217,9 +218,9 @@ void TransmitToDriver()
 
   // need to change response to string i.e char to string
   
-  Serial.print("The message sent to the driver was ");
+  Serial.println("The message sent to the driver was ");
 
-  Serial.print (stringtosend); //print value to serial, for the driver
+  Serial.println (stringtosend); //print value to serial, for the driver
   //Serial.println("#");                      // print the string terminator
   Serial.println("--------------------------------------------------------");
 
