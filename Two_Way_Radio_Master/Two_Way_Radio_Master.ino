@@ -22,6 +22,15 @@
 #include <LiquidCrystal.h>
 #include <printf.h>
 
+// initialize the library by associating any needed LCD interface pin
+// with the arduino pin number it is connected to
+
+
+const int rs = 27, en = 26, d4 = 25, d5 = 24, d6 = 23, d7 = 22;
+LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
+
+
+
 #define PIN10  10
 
 RF24 radio(7, 8);                            // CE, CSN
@@ -39,6 +48,12 @@ char response[32] = "";
 
 void setup()
 {
+  // set up the LCD's number of columns and rows:
+  lcd.begin(20, 4);
+  // Print a message to the LCD.
+  lcd.setCursor(0, 2);
+  lcd.print("hello Sir Arthur!");
+
   //pinMode(PIN10, OUTPUT);                   // this is an NRF24L01 requirement if pin 10 is not used
   Serial.begin(9600);                         // this module uses the serial channel to Tx/ Rx commands from the Dome driver
   printf_begin();
