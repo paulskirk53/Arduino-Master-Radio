@@ -23,6 +23,7 @@ void initialisethecommand_to_null();
 void SendTheCommand();
 void ReceiveTheResponse();
 void TransmitToDriver();
+void lcdprint(int row, int col, String mess);
 
 #include "pins_arduino.h" 
 #include "arduino.h"
