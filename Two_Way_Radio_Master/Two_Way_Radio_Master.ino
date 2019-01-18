@@ -90,8 +90,9 @@ void loop()
 
 		//ReceivedData.equalsIgnoreCase("AZ")
 
-		//these three commands all just require the azimuth to be returned, so just send AZ# as the command for all three
-		if ( (ReceivedData.equalsIgnoreCase("AZ")) || (ReceivedData.equalsIgnoreCase("SA")) || (ReceivedData.equalsIgnoreCase("SL")) )
+		// AZ is the only compass related request this code will receive from the driver
+
+		if ( (ReceivedData.equalsIgnoreCase("AZ")) )
 		{
 		    Message = ReceivedData;                            // need to keep this as receivedData is initialised in calls below
 			radio.openWritingPipe(Encoder_address);
@@ -104,24 +105,12 @@ void loop()
 			ReceiveTheResponse();
 			TransmitToDriver();
 			         
-
 			if (  Message.equalsIgnoreCase("AZ") )            // these 3 if just update the LCD
 			{
 				lcdprint(0,0,"Sent AZ, Received ");
 				lcdprint(8,1,stringtosend.substring(0,7));                   // the current azimuth is returned from the encoder
 			}
 
-			if (  Message.equalsIgnoreCase("SA") )
-			{
-				lcdprint(0,2,"Sent :");
-				lcdprint(6,2, Message);
-			}
-
-			if (  Message.equalsIgnoreCase("SL") )
-			{
-				lcdprint(0,3,"Slew progress");
-				lcdprint(13,3,stringtosend.substring(0,7));                 // returned from encoder to indicate current pos
-			}
 
 			Message="";
 
