@@ -185,9 +185,7 @@ void SendTheCommand()
 
 	radio.startListening();                            // put after the radio write so that no delay to start listening for response
 
-	//Serial.print("The text sent was ");
-	//Serial.println(theCommand);
-	// Serial.println("---------------------------------------------");
+
 	ReceivedData = "";
 
 
@@ -197,10 +195,6 @@ void ReceiveTheResponse()
 {
 	if (tx_sent)
 	{
-		// Serial.print("the command was...");
-		// Serial.println(theCommand);
-		
-
 		unsigned long currentMillis;
 		unsigned long prevMillis;
 		unsigned long txIntervalMillis = 300;            // wait 0.3 seconds to see if a response will be received
@@ -217,10 +211,9 @@ void ReceiveTheResponse()
 			*/
 			
 			currentMillis = millis();
+
 			if (currentMillis - prevMillis > txIntervalMillis)
 			{
-				// Serial.println("retry ");
-				// Serial.println(currentMillis - prevMillis);
 				SendTheCommand();
 				prevMillis = currentMillis ; //reset the timer
 			}
@@ -250,11 +243,6 @@ void ReceiveTheResponse()
 void TransmitToDriver()
 {
 
-
-	// need to change response to string i.e char to string
-	
-	// print this to LCD Serial.println("The message sent to the driver was ");
-
 	Serial.println (stringtosend);              // print value to serial, for the driver
 	                                           // the string terminator # is already part of the string received from encoder
 	
@@ -263,10 +251,8 @@ void TransmitToDriver()
 
 void lcdprint(int col, int row, String mess)
 {
-//Serial.print("here");
-//Serial.println(mess );
+
 			lcd.setCursor(col, row);
 			lcd.print(mess);
-
 
 }
