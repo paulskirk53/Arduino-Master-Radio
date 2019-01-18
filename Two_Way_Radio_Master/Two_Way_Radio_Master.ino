@@ -51,7 +51,7 @@ void setup()
 	// set up the LCD's number of columns and rows:
 	lcd.begin(20, 4);
 	// Print a message to the LCD.
-	lcd.setCursor(0, 2);
+	lcd.setCursor(0, 0);
 	lcd.print("hello Sir Arthur!");
 
 	//pinMode(PIN10, OUTPUT);                   // this is an NRF24L01 requirement if pin 10 is not used
@@ -91,11 +91,11 @@ void loop()
 		//ReceivedData.equalsIgnoreCase("AZ")
 
 		//these three commands all just require the azimuth to be returned, so just send AZ# as the command for all three
-		if ((ReceivedData.equalsIgnoreCase("AZ")) || (ReceivedData.equalsIgnoreCase("SA")) || (ReceivedData.equalsIgnoreCase("SL")))
+		if ( (ReceivedData.equalsIgnoreCase("AZ")) || (ReceivedData.equalsIgnoreCase("SA")) || (ReceivedData.equalsIgnoreCase("SL")) )
 		{
-
+		    Message = ReceivedData;                            // need to keep this as receivedData is initialised in calls below
 			radio.openWritingPipe(Encoder_address);
-			theCommand[0] = 'A';                                // note single quote use
+			theCommand[0] = 'A';                             // note single quote use
 			theCommand[1] = 'Z';
 			theCommand[2] = '#';
 
@@ -103,27 +103,27 @@ void loop()
 			SendTheCommand();
 			ReceiveTheResponse();
 			TransmitToDriver();
-			                                               // three ifs below just for updating lcd
+			         
 
-			if (  ReceivedData.equalsIgnoreCase("AZ") )
+			if (  Message.equalsIgnoreCase("AZ") )            // these 3 if just update the LCD
 			{
 				lcdprint(0,0,"Sent AZ, Received ");
-				lcdprint(0,1,stringtosend);                // the current azimuth is returned from the encoder
+				lcdprint(8,1,stringtosend.substring(0,7));                   // the current azimuth is returned from the encoder
 			}
 
-			if (  ReceivedData.equalsIgnoreCase("SA") )
+			if (  Message.equalsIgnoreCase("SA") )
 			{
 				lcdprint(0,2,"Sent :");
-				lcdprint(6,2, ReceivedData);
+				lcdprint(6,2, Message);
 			}
 
-			if (  ReceivedData.equalsIgnoreCase("SL") )
+			if (  Message.equalsIgnoreCase("SL") )
 			{
 				lcdprint(0,3,"Slew progress");
-				lcdprint(13,3,stringtosend);               //returned from encoder to indicate current pos
+				lcdprint(13,3,stringtosend.substring(0,7));                 // returned from encoder to indicate current pos
 			}
 
-
+			Message="";
 
 		}  //endif received AZ|SA|SL
 
@@ -233,7 +233,7 @@ void ReceiveTheResponse()
 			radio.read(&response, sizeof(response));
 			//radio.stopListening();
 			
-			stringtosend = String(response);               // convert char to string for sending to driver
+			stringtosend = String(response) + '#';               // convert char to string for sending to driver
 		}
 	}
 	else
@@ -256,13 +256,17 @@ void TransmitToDriver()
 	// print this to LCD Serial.println("The message sent to the driver was ");
 
 	Serial.println (stringtosend);              // print value to serial, for the driver
-	//Serial.println("#");                      // print the string terminator
-	// Serial.println("--------------------------------------------------------");
+	                                           // the string terminator # is already part of the string received from encoder
+	
 
 }   // end void transmit to driver
 
-void lcdprint(int row, int col, String mess)
+void lcdprint(int col, int row, String mess)
 {
+//Serial.print("here");
+//Serial.println(mess );
+			lcd.setCursor(col, row);
+			lcd.print(mess);
 
 
 }

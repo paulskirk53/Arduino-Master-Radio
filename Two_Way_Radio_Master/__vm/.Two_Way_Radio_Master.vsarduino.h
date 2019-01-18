@@ -9,6 +9,7 @@
 */
 
 #define __AVR_ATmega2560__
+#define _VMDEBUG 1
 #define ARDUINO 10808
 #define ARDUINO_MAIN
 #define F_CPU 16000000L
@@ -23,7 +24,7 @@ void initialisethecommand_to_null();
 void SendTheCommand();
 void ReceiveTheResponse();
 void TransmitToDriver();
-void lcdprint(int row, int col, String mess);
+void lcdprint(int col, int row, String mess);
 
 #include "pins_arduino.h" 
 #include "arduino.h"
