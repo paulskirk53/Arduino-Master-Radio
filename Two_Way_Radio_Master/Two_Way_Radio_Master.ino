@@ -88,7 +88,33 @@ void loop()
 
     ReceivedData = Serial.readStringUntil('#');   // the string does not contain the # character
 
-    //ReceivedData.equalsIgnoreCase("AZ")
+    //ES
+
+    if ( (ReceivedData.equalsIgnoreCase("ES")) )
+    {
+      Message = ReceivedData;                            // need to keep this as receivedData is initialised in calls below
+      radio.openWritingPipe(Encoder_address);
+      theCommand[0] = 'E';                             // note single quote use
+      theCommand[1] = 'S';
+      theCommand[2] = '#';
+
+
+      SendTheCommand();
+      ReceiveTheResponse();
+
+      if (  Message.equalsIgnoreCase("ES") )            //  just update the LCD
+      {
+        lcdprint(0, 0, "Sent Emergency Stop");
+        lcdprint(8, 1, stringtosend.substring(0, 7));
+      }
+
+
+      Message = "";
+
+    }  //endif received ES
+
+
+    //end ES
 
     // AZ is the only compass related request this code will receive from the driver
 
@@ -114,7 +140,7 @@ void loop()
 
       Message = "";
 
-    }  //endif received AZ|SA|SL
+    }  //endif received AZ
 
 
     if (ReceivedData.equalsIgnoreCase("OS"))           // open shutter
