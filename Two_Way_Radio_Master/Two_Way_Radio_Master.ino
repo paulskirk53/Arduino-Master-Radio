@@ -45,7 +45,7 @@ bool tx_sent;
 char theCommand[32] = "";                    // confusingly, you can initialise a char array in this way, but later in code, it is not possible to assign in this way.
 double ReceivedPayload = 0.0;
 char response[32] = "";
-
+int x=0;
 void setup()
 {
   // set up the LCD's number of columns and rows:
@@ -55,7 +55,7 @@ void setup()
   lcd.print("Setup - Ready");
 
   //pinMode(PIN10, OUTPUT);                   // this is an NRF24L01 requirement if pin 10 is not used
-  Serial.begin(9600);                         // this module uses the serial channel to Tx/ Rx commands from the Dome driver
+  Serial.begin(115200);                         // this module uses the serial channel to Tx/ Rx commands from the Dome driver
   printf_begin();
 
   radio.begin();
@@ -90,14 +90,13 @@ void loop()
 
     //ES
 
-    if ( (ReceivedData.equalsIgnoreCase("ES")) )
+    if (ReceivedData.equalsIgnoreCase("ES")) 
     {
       Message = ReceivedData;                            // need to keep this as receivedData is initialised in calls below
       radio.openWritingPipe(Encoder_address);
       theCommand[0] = 'E';                             // note single quote use
       theCommand[1] = 'S';
       theCommand[2] = '#';
-
 
       SendTheCommand();
       ReceiveTheResponse();
@@ -126,13 +125,25 @@ void loop()
       theCommand[1] = 'Z';
       theCommand[2] = '#';
 
+	/*  //new
+
+	    x=x+1;
+	    lcd.clear();
+	    lcd.setCursor(0, 0);
+	    lcd.print("Count of Az sent:");
+	    lcd.setCursor(0, 1);
+	    lcd.print(x);
+	    delay(2000);
+// trace here {theCommand[0]}{theCommand[1]}{theCommand[2]}
+
+	  // end new */
 
       SendTheCommand();
       ReceiveTheResponse();
       TransmitToDriver();
 
       if (  Message.equalsIgnoreCase("AZ") )            // these 3 if just update the LCD
-      {
+      {                                                 // TRACE ON OPEN BRACE {stringtosend.substring(0, 7)}
         lcdprint(0, 0, "Sent AZ, Received ");
         lcdprint(8, 1, stringtosend.substring(0, 7));                // the current azimuth is returned from the encoder
       }
@@ -270,7 +281,7 @@ void TransmitToDriver()
 
 void lcdprint(int col, int row, String mess)
 {
-  lcd.clear();
+  //lcd.clear();
   lcd.setCursor(col, row);
   lcd.print(mess);
 
