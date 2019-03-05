@@ -262,6 +262,7 @@ void ReceiveTheResponse()
   else
   {
     stringtosend = "";
+	lcdprint(0,0, "Transmission Failure");
     // write this to LCD Serial.println("[-] The transmission to the selected node failed.");
     // need to think about what to do if tx fails
   }
