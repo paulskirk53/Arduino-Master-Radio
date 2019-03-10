@@ -144,7 +144,7 @@ void loop()
 
       if (  Message.equalsIgnoreCase("AZ") )            // these 3 if just update the LCD
       {                                                 // TRACE ON OPEN BRACE {stringtosend.substring(0, 7)}
-        lcdprint(0, 0, "Sent AZ, Received ");
+        lcdprint(0, 0, "Sent AZ, Received   ");
         lcdprint(8, 1, stringtosend.substring(0, 7));                // the current azimuth is returned from the encoder
       }
 
