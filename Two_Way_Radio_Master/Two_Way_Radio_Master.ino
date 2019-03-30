@@ -188,8 +188,9 @@ void loop()
       SendTheCommand();
       ReceiveTheResponse();
       TransmitToDriver();
-      lcdprint(0, 0, "Sent SS, Received ");
-      lcdprint(8, 1, stringtosend.substring(0, 7));
+      lcdprint(0, 0, "Sent Status ?:");
+	  lcdprint(0, 1, "Received:           ");
+      lcdprint(9, 1, stringtosend.substring(0, 7));
 
     }// end if receiveddata.startswith
 
