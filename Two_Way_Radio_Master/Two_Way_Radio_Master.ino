@@ -103,7 +103,8 @@ void loop()
 
       if (  Message.equalsIgnoreCase("ES") )            //  just update the LCD
       {
-        lcdprint(0, 0, "Sent Emergency Stop");
+        lcdprint(0, 0, "Sent Emergency Stop ");
+
         lcdprint(8, 1, stringtosend.substring(0, 7));
       }
 
@@ -145,6 +146,7 @@ void loop()
       if (  Message.equalsIgnoreCase("AZ") )            // these 3 if just update the LCD
       {                                                 // TRACE ON OPEN BRACE {stringtosend.substring(0, 7)}
         lcdprint(0, 0, "Sent AZ, Received   ");
+		lcdprint(0, 1, "                    ");
         lcdprint(8, 1, stringtosend.substring(0, 7));                // the current azimuth is returned from the encoder
       }
 
@@ -162,7 +164,8 @@ void loop()
       theCommand[1] = 'S';
       theCommand[2] = '#';
       SendTheCommand();
-      lcdprint(0, 0, "Sent Open Shutter");
+      lcdprint(0, 0, "Sent Open Shutter   ");
+      lcdprint(0, 1, "                    ");
     }
 
 
@@ -174,7 +177,8 @@ void loop()
       theCommand[1] = 'S';
       theCommand[2] = '#';
       SendTheCommand();
-      lcdprint(0, 0, "Sent Close Shutter");
+      lcdprint(0, 0, "Sent Close Shutter  ");
+	  lcdprint(0, 1, "                    ");
     }
 
 
@@ -188,9 +192,10 @@ void loop()
       SendTheCommand();
       ReceiveTheResponse();
       TransmitToDriver();
-      lcdprint(0, 0, "Sent Status ?:");
-	  lcdprint(0, 1, "Received:           ");
-      lcdprint(9, 1, stringtosend.substring(0, 7));
+      lcdprint(0, 0, "Sent Status ?:      ");
+	  lcdprint(0, 1, "                    ");
+	  lcdprint(0, 1, "Received: ");
+      lcdprint(10, 1, stringtosend.substring(0, 7));
 
     }// end if receiveddata.startswith
 
@@ -264,6 +269,9 @@ void ReceiveTheResponse()
   {
     stringtosend = "";
 	lcdprint(0,0, "Transmission Failure");
+	lcdprint(0,1, "                    ");
+	lcdprint(0,2, "                    ");
+	lcdprint(0,3, "                    ");
     // write this to LCD Serial.println("[-] The transmission to the selected node failed.");
     // need to think about what to do if tx fails
   }
