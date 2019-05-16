@@ -55,7 +55,7 @@ void setup()
   lcd.print("Setup - Ready");
 
   //pinMode(PIN10, OUTPUT);                   // this is an NRF24L01 requirement if pin 10 is not used
-  Serial.begin(115200);                         // this module uses the serial channel to Tx/ Rx commands from the Dome driver
+  Serial.begin(115200);                       // this module uses the serial channel to Tx/ Rx commands from the Dome driver
   printf_begin();
 
   radio.begin();
@@ -66,6 +66,19 @@ void setup()
   radio.setRetries(15, 15);                  // time between tries and No of tries
   radio.enableDynamicPayloads();             // needs this for acknowledge to work
   radio.openReadingPipe(1, Master_address);  //NEED 1 for shared addresses
+//new
+      radio.openWritingPipe(Encoder_address);
+      theCommand[0] = 'T';                           // note single quote use
+      theCommand[1] = 'S';
+      theCommand[2] = 'T';
+	  theCommand[3] = '#';
+      SendTheCommand();
+      ReceiveTheResponse();
+	  lcdprint(0,1,"Comms check");
+	  lcdprint(0,2,stringtosend);
+
+	  stringtosend = "";
+//end new
 
 }
 
