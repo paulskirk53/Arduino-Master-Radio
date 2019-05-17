@@ -40,12 +40,17 @@ const byte Master_address[6] = "mastr";
 String  ReceivedData  = "";
 String Message = "";
 String stringtosend;
+String blank = "                    ";
 
 bool tx_sent;
 char theCommand[32] = "";                    // confusingly, you can initialise a char array in this way, but later in code, it is not possible to assign in this way.
 double ReceivedPayload = 0.0;
 char response[32] = "";
-int x=0;
+
+int azcount=0;
+double last_update_time =0.0;
+double azinterval ;
+
 void setup()
 {
   // set up the LCD's number of columns and rows:
@@ -74,8 +79,8 @@ void setup()
 	  theCommand[3] = '#';
       SendTheCommand();
       ReceiveTheResponse();
-	  lcdprint(0,1,"Comms check");
-	  lcdprint(0,2,stringtosend);
+	  lcdprint(0,0,"Comms check");
+	  lcdprint(0,1,stringtosend);
 
 	  stringtosend = "";
 //end new
@@ -95,6 +100,7 @@ void loop()
     arduino uses zero as null character - no quotes
   */
   initialisethecommand_to_null();
+
 
   if (Serial.available() > 0)                      // the dome driver has sent a command
   {
@@ -157,10 +163,16 @@ void loop()
       TransmitToDriver();
 
       if (  Message.equalsIgnoreCase("AZ") )            // these 3 if just update the LCD
-      {                                                 // TRACE ON OPEN BRACE {stringtosend.substring(0, 7)}
-        lcdprint(0, 0, "Sent AZ, Received   ");
-		lcdprint(0, 1, "                    ");
-        lcdprint(8, 1, stringtosend.substring(0, 7));                // the current azimuth is returned from the encoder
+      {  
+	  azinterval = abs((last_update_time - millis())/1000);
+	  azcount++;                                               // TRACE ON OPEN BRACE {stringtosend.substring(0, 7)}
+		lcdprint(0, 0, blank);
+        lcdprint(0, 0, "Sent AZ, Rec'd ");
+
+        lcdprint(15, 0, stringtosend.substring(0, 7));                // the current azimuth is returned from the encoder
+		lcdprint(0,2, "No of AZ calls: " + String(azcount,0));
+		lcdprint(0,3, "AZ interval " + String(azinterval,0));
+		last_update_time = millis();
       }
 
 
@@ -177,8 +189,9 @@ void loop()
       theCommand[1] = 'S';
       theCommand[2] = '#';
       SendTheCommand();
+	  lcdprint(0, 0, blank);
       lcdprint(0, 0, "Sent Open Shutter   ");
-      lcdprint(0, 1, "                    ");
+      lcdprint(0, 1, blank);
     }
 
 
@@ -191,7 +204,7 @@ void loop()
       theCommand[2] = '#';
       SendTheCommand();
       lcdprint(0, 0, "Sent Close Shutter  ");
-	  lcdprint(0, 1, "                    ");
+	  lcdprint(0, 1, blank);
     }
 
 
@@ -206,7 +219,7 @@ void loop()
       ReceiveTheResponse();
       TransmitToDriver();
       lcdprint(0, 0, "Sent Status ?:      ");
-	  lcdprint(0, 1, "                    ");
+	  lcdprint(0, 1, blank);
 	  lcdprint(0, 1, "Received: ");
       lcdprint(10, 1, stringtosend.substring(0, 7));
 
@@ -282,9 +295,9 @@ void ReceiveTheResponse()
   {
     stringtosend = "";
 	lcdprint(0,0, "Transmission Failure");
-	lcdprint(0,1, "                    ");
-	lcdprint(0,2, "                    ");
-	lcdprint(0,3, "                    ");
+	lcdprint(0,1, blank);
+	lcdprint(0,2, blank);
+	lcdprint(0,3, blank);
     // write this to LCD Serial.println("[-] The transmission to the selected node failed.");
     // need to think about what to do if tx fails
   }
