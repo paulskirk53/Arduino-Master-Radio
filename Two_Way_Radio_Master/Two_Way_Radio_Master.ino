@@ -171,9 +171,17 @@ void loop()
 
         lcdprint(15, 0, stringtosend.substring(0, 4));                // the current azimuth is returned from the encoder
         lcdprint(0, 2, "No of AZ calls: " + String(azcount));
-        lcdprint(0, 3, blank);
+       // lcdprint(0, 3, blank);
         lcdprint(0, 3, "AZ interval " + String(azinterval, 0));
         last_update_time = millis();
+
+		//reset counter on 9999
+		if (azcount > 999)
+		 {
+		   azcount = 0;
+		 }
+
+
       }
 
 
