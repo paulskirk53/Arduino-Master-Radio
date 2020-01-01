@@ -109,9 +109,9 @@ void loop()
 
     //ES
 
-    if (ReceivedData.equalsIgnoreCase("ES"))
+    if (ReceivedData.indexOf("ES", 0) > -1) // THE INDEX VALUE IS the value of the position of the string in receivedData, or -1 if the string not found
     {
-      Message = ReceivedData;                            // need to keep this as receivedData is initialised in calls below
+      Message = "ES";                            // need to keep this as receivedData is initialised in calls below
       radio.openWritingPipe(Encoder_address);
       theCommand[0] = 'E';                             // note single quote use
       theCommand[1] = 'S';
@@ -120,12 +120,12 @@ void loop()
       SendTheCommand();
       ReceiveTheResponse();
 
-      if (  Message.equalsIgnoreCase("ES") )            //  just update the LCD
-      {
-        lcdprint(0, 0, "Sent Emergency Stop ");
+      //   update the LCD
 
-        lcdprint(8, 1, stringtosend.substring(0, 7));
-      }
+      lcdprint(0, 0, "Sent Emergency Stop ");
+
+      lcdprint(8, 1, stringtosend.substring(0, 7));
+
 
 
       Message = "";
@@ -137,60 +137,43 @@ void loop()
 
     // AZ is the only compass related request this code will receive from the driver
 
-    if ( (ReceivedData.equalsIgnoreCase("AZ")) )
+    if (ReceivedData.indexOf("AZ", 0) > -1) // THE INDEX VALUE IS the value of the position of the string in receivedData, or -1 if the string not found
     {
-      Message = ReceivedData;                            // need to keep this as receivedData is initialised in calls below
+      Message = "AZ";                            // need to keep this as receivedData is initialised in calls below
       radio.openWritingPipe(Encoder_address);
       theCommand[0] = 'A';                             // note single quote use
       theCommand[1] = 'Z';
       theCommand[2] = '#';
 
-      /*  //new
-
-          x=x+1;
-          lcd.clear();
-          lcd.setCursor(0, 0);
-          lcd.print("Count of Az sent:");
-          lcd.setCursor(0, 1);
-          lcd.print(x);
-          delay(2000);
-        // trace here {theCommand[0]}{theCommand[1]}{theCommand[2]}
-
-        // end new */
-
       SendTheCommand();
       ReceiveTheResponse();
       TransmitToDriver();
 
-      if (  Message.equalsIgnoreCase("AZ") )            // these 3 if just update the LCD
+      // update the LCD
+
+     // azinterval = abs((last_update_time - millis()) / 1000);
+      azcount++;                                               // TRACE ON OPEN BRACE {stringtosend.substring(0, 7)}
+      lcdprint(0, 0, blank);
+      lcdprint(0, 0, "Sent AZ, Rec'd ");
+
+      lcdprint(15, 0, stringtosend.substring(0, 4));                // the current azimuth is returned from the encoder
+      lcdprint(0, 2, "No of AZ calls: " + String(azcount));
+      // lcdprint(0, 3, blank);
+     // lcdprint(0, 3, "AZ interval " + String(azinterval, 0));
+     // last_update_time = millis();
+
+      //reset counter on 9999
+      if (azcount > 999)
       {
-        azinterval = abs((last_update_time - millis()) / 1000);
-        azcount++;                                               // TRACE ON OPEN BRACE {stringtosend.substring(0, 7)}
-        lcdprint(0, 0, blank);
-        lcdprint(0, 0, "Sent AZ, Rec'd ");
-
-        lcdprint(15, 0, stringtosend.substring(0, 4));                // the current azimuth is returned from the encoder
-        lcdprint(0, 2, "No of AZ calls: " + String(azcount));
-       // lcdprint(0, 3, blank);
-        lcdprint(0, 3, "AZ interval " + String(azinterval, 0));
-        last_update_time = millis();
-
-		//reset counter on 9999
-		if (azcount > 999)
-		 {
-		   azcount = 0;
-		 }
-
-
+        azcount = 0;
       }
-
 
       Message = "";
 
     }  //endif received AZ
 
 
-    if (ReceivedData.equalsIgnoreCase("OS"))           // open shutter
+    if (ReceivedData.indexOf("OS", 0) > -1) // THE INDEX VALUE IS the value of the position of the string in receivedData, or -1 if the string not found
     {
 
       radio.openWritingPipe(Shutter_address);
@@ -204,7 +187,7 @@ void loop()
     }
 
 
-    if (ReceivedData.equalsIgnoreCase("CS"))           // close shutter
+    if (ReceivedData.indexOf("CS", 0) > -1) // THE INDEX VALUE IS the value of the position of the string in receivedData, or -1 if the string not found
     {
 
       radio.openWritingPipe(Shutter_address);
@@ -217,7 +200,7 @@ void loop()
     }
 
 
-    if (ReceivedData.equalsIgnoreCase("SS"))           // shutter status
+    if (ReceivedData.indexOf("SS", 0) > -1) // THE INDEX VALUE IS the value of the position of the string in receivedData, or -1 if the string not found
     {
 
       radio.openWritingPipe(Shutter_address);
@@ -232,7 +215,7 @@ void loop()
       lcdprint(0, 1, "Received: ");
       lcdprint(10, 1, stringtosend.substring(0, 7));
 
-    }// end if receiveddata.startswith
+    }// end if receiveddata
 
   } //end if serial available
 
