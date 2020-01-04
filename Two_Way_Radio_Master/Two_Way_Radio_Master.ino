@@ -34,7 +34,7 @@ LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 RF24 radio(7, 8);                            // CE, CSN
 const byte Encoder_address[6] = "encod";     // the address used to write to the encoder arduino board
 const byte Shutter_address[6] = "shutt";     // the address used to write to the shutter arduino board
-const byte Master_address[6] = "mastr";
+const byte Master_address[6]  = "mastr";
 String  ReceivedData  = "";
 String Message = "";
 String stringtosend;
@@ -42,7 +42,7 @@ String blank = "                    ";
 
 bool tx_sent;
 char theCommand[32] = "";                    // confusingly, you can initialise a char array in this way, but later in code, it is not possible to assign in this way.
-double ReceivedPayload = 0.0;
+
 char response[32] = "";
 
 int azcount = 0;
@@ -82,6 +82,8 @@ void setup()
 
   stringtosend = "";
   //end new
+
+delay (3000);     // delay for encoder to respond before more commands are send in void loop
 
 }
 
@@ -155,7 +157,7 @@ void loop()
         {
           TransmitToDriver();
         }
-        Serial.print("AZ retry counter value ");
+        Serial.print("Test print AZ retry counter value ");
         Serial.println(azretrycount);
       }
       // update the LCD
@@ -229,7 +231,7 @@ void loop()
         {
           TransmitToDriver();
         }
-        Serial.print("SS retry counter value ");
+        Serial.print("Test print SS retry counter value ");
         Serial.println(ssretrycount);
       }
 
