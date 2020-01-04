@@ -1,8 +1,6 @@
 
-//this is the MASTER reviewed and checked for process on Sunday 2-12 @12.37 see below
-// needs some error checks  and perhaps printing to an LCD with two rows for sent and two for received
-//bug 2 hashes added to command -
-// sequence needs to be this for master
+//this is the MASTER v3 branch created 4-1-2020
+//
 /*
   open the write pipe for the correct address - encoder or shutter
   stop listening
@@ -48,8 +46,8 @@ double ReceivedPayload = 0.0;
 char response[32] = "";
 
 int azcount = 0;
-double last_update_time = 0.0;
-double azinterval ;
+double ssretrycount = 0;
+double azretrycount = 0;
 
 void setup()
 {
@@ -145,13 +143,24 @@ void loop()
       theCommand[1] = 'Z';
       theCommand[2] = '#';
 
-      SendTheCommand();
-      ReceiveTheResponse();
-      TransmitToDriver();
+      bool az_retry = false;
 
+      while (az_retry == false )
+      {
+        azretrycount++;
+        SendTheCommand();
+        ReceiveTheResponse();
+        az_retry = validate_the_response("AZ");
+        if (az_retry)
+        {
+          TransmitToDriver();
+        }
+        Serial.print("AZ retry counter value ");
+        Serial.println(azretrycount);
+      }
       // update the LCD
 
-     // azinterval = abs((last_update_time - millis()) / 1000);
+
       azcount++;                                               // TRACE ON OPEN BRACE {stringtosend.substring(0, 7)}
       lcdprint(0, 0, blank);
       lcdprint(0, 0, "Sent AZ, Rec'd ");
@@ -159,8 +168,8 @@ void loop()
       lcdprint(15, 0, stringtosend.substring(0, 4));                // the current azimuth is returned from the encoder
       lcdprint(0, 2, "No of AZ calls: " + String(azcount));
       // lcdprint(0, 3, blank);
-     // lcdprint(0, 3, "AZ interval " + String(azinterval, 0));
-     // last_update_time = millis();
+      // lcdprint(0, 3, "AZ interval " + String(azinterval, 0));
+      // last_update_time = millis();
 
       //reset counter on 9999
       if (azcount > 999)
@@ -207,9 +216,24 @@ void loop()
       theCommand[0] = 'S';                           // note single quote use
       theCommand[1] = 'S';
       theCommand[2] = '#';
-      SendTheCommand();
-      ReceiveTheResponse();
-      TransmitToDriver();
+
+      bool ss_retry = false;
+
+      while (ss_retry == false )
+      {
+        ssretrycount++;
+        SendTheCommand();
+        ReceiveTheResponse();
+        ss_retry = validate_the_response("SS");
+        if (ss_retry)
+        {
+          TransmitToDriver();
+        }
+        Serial.print("SS retry counter value ");
+        Serial.println(ssretrycount);
+      }
+
+      //update lcd
       lcdprint(0, 0, "Sent Status ?:      ");
       lcdprint(0, 1, blank);
       lcdprint(0, 1, "Received: ");
@@ -230,78 +254,32 @@ void initialisethecommand_to_null()
   }
 } // end void initialisethecommand_to_null
 
+
 void SendTheCommand()
 {
-
-
   radio.stopListening();
   tx_sent = radio.write(&theCommand, sizeof(theCommand));
 
   radio.startListening();                            // put after the radio write so that no delay to start listening for response
 
-
   ReceivedData = "";
-
 
 }
 
 void ReceiveTheResponse()
 {
-  if (tx_sent)
-  {
-    unsigned long currentMillis;
-    unsigned long prevMillis;
-    unsigned long txIntervalMillis = 300;            // wait 0.3 seconds to see if a response will be received
 
-    prevMillis = millis();
-    while (!radio.available())
-    {
-      /*
-        this while loop was originally empty and just waited for radio to become available. However a bug occurred which meant
-        this section of code was introduced as a bug fix.
-        The bug was: if az was sent twice in a row followed by ss, the program was locked in this (empty as was ) loop.
-        apparently there was no radio available, even though the shutter arduino code reported to its serial monitor that a response had been sent. It was very perplexing.
-        it can be seen that this code is designed to resend the command previously sent if there is no response within 0.5 seconds.
-      */
+  radio.read(&response, sizeof(response));
 
-      currentMillis = millis();
-
-      if (currentMillis - prevMillis > txIntervalMillis)
-      {
-        SendTheCommand();
-        prevMillis = currentMillis ; //reset the timer
-      }
-
-
-    }  // end while
-
-    if (radio.available())  // nrf radio is only available if the complete TX was successful - datasheet
-    {
-      radio.read(&response, sizeof(response));
-      //radio.stopListening();
-
-      stringtosend = String(response) + '#';               // convert char to string for sending to driver
-    }
-  }
-  else
-  {
-    stringtosend = "";
-    lcdprint(0, 0, "Transmission Failure");
-    lcdprint(0, 1, blank);
-    lcdprint(0, 2, blank);
-    lcdprint(0, 3, blank);
-    // write this to LCD Serial.println("[-] The transmission to the selected node failed.");
-    // need to think about what to do if tx fails
-  }
-
-
+  stringtosend = String(response) + '#';               // convert char to string for sending to driver
 
 } // end void receivetheresponse
 
 void TransmitToDriver()
 {
+  //Serial.print ("the string sent to driver is ");
 
-  Serial.println (stringtosend);              // print value to serial, for the driver
+  Serial.print (stringtosend);              // print value to serial, for the driver
   // the string terminator # is already part of the string received from encoder
 
 
@@ -312,5 +290,45 @@ void lcdprint(int col, int row, String mess)
   //lcd.clear();
   lcd.setCursor(col, row);
   lcd.print(mess);
+
+}
+void TransmissionFailure()
+{
+
+  lcdprint(0, 0, "Transmission Failure");
+  lcdprint(0, 1, blank);
+  lcdprint(0, 2, blank);
+  lcdprint(0, 3, blank);
+  // write this to LCD Serial.println("[-] The transmission to the selected node failed.");
+  // need to think about what to do if tx fails
+}
+bool validate_the_response(String receipt)
+{
+
+  if (receipt == "AZ")
+  {
+    double azvalue;
+    azvalue = stringtosend.toDouble();
+    if ((azvalue > 0) and (azvalue < 361))
+    {
+      return true;
+    }
+    else
+    {
+      return false;
+    }
+  }
+
+  if (receipt == "SS")
+  {
+    if ( (stringtosend.indexOf("OPEN#", 0) > -1) | (stringtosend.indexOf("CLOSED#", 0) > -1) )
+    {
+      return true;
+    }
+    else
+    {
+      return false;
+    }
+  }
 
 }
