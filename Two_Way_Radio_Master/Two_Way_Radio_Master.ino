@@ -71,19 +71,19 @@ void setup()
   radio.openReadingPipe(1, Master_address);  //NEED 1 for shared addresses
   //new
   radio.openWritingPipe(Encoder_address);
-  theCommand[0] = 'T';                           // note single quote use
-  theCommand[1] = 'S';
-  theCommand[2] = 'T';
-  theCommand[3] = '#';
-  SendTheCommand();
-  ReceiveTheResponse();
-  lcdprint(0, 0, "Comms check         ");
-  lcdprint(0, 1, stringtosend);
+  //theCommand[0] = 'T';                           // note single quote use
+  //theCommand[1] = 'S';
+  //theCommand[2] = 'T';
+  //theCommand[3] = '#';
+  //SendTheCommand();
+  //ReceiveTheResponse();
+  //lcdprint(0, 0, "Comms check         ");
+  //lcdprint(0, 1, stringtosend);
 
   stringtosend = "";
   //end new
 
-delay (3000);     // delay for encoder to respond before more commands are send in void loop
+  delay (3000);     // delay for encoder to respond before more commands are send in void loop
 
 }
 
@@ -151,10 +151,20 @@ void loop()
       {
         azretrycount++;
         SendTheCommand();
+        delay(100);
         ReceiveTheResponse();
         az_retry = validate_the_response("AZ");
+
+        Serial.print("stringtosend value is ");                       //here
+        Serial.println(stringtosend);
+       // delay(1000);
+
         if (az_retry)
         {
+          Serial.println();
+          Serial.print("string ACTUALLY SENT IS ");                       //here
+          Serial.println(stringtosend);
+
           TransmitToDriver();
         }
         Serial.print("Test print AZ retry counter value ");
@@ -225,11 +235,21 @@ void loop()
       {
         ssretrycount++;
         SendTheCommand();
+        delay(100);
         ReceiveTheResponse();
         ss_retry = validate_the_response("SS");
+
+        Serial.print("stringtosend value is ");                       //here
+        Serial.println(stringtosend);
+       // delay(100);
         if (ss_retry)
         {
+
+          Serial.println();
+          Serial.print("string ACTUALLY SENT IS ");                       //here
+          Serial.println(stringtosend);
           TransmitToDriver();
+
         }
         Serial.print("Test print SS retry counter value ");
         Serial.println(ssretrycount);
@@ -281,7 +301,7 @@ void TransmitToDriver()
 {
   //Serial.print ("the string sent to driver is ");
 
-  Serial.print (stringtosend);              // print value to serial, for the driver
+  Serial.print ("TAKE THIS OUT " + stringtosend);             // print value to serial, for the driver
   // the string terminator # is already part of the string received from encoder
 
 
@@ -325,6 +345,15 @@ bool validate_the_response(String receipt)
   {
     if ( (stringtosend.indexOf("OPEN#", 0) > -1) | (stringtosend.indexOf("CLOSED#", 0) > -1) )
     {
+      if (stringtosend.indexOf("OPEN#", 0) > -1)
+      {
+        stringtosend = "OPEN#";
+      }
+
+      if (stringtosend.indexOf("CLOSED#", 0) > -1)
+      {
+        stringtosend = "CLOSED#";
+      }
       return true;
     }
     else
