@@ -1,6 +1,7 @@
 
 //this is the MASTER v3 branch created 4-1-2020
-//
+//TEST SERIAL PRINTS were removed 9-1-20 and the sketch uploaded and tested for Radio TX and Rx only - tests ok
+// when delay(100) was removed in the two retry sections, the sketch did not work
 /*
   open the write pipe for the correct address - encoder or shutter
   stop listening
@@ -83,7 +84,7 @@ void setup()
   initialisetheresponse_to_null();
   Message = "";
   stringtosend = "";
-  //end new
+
 
   delay (3000);     // delay for encoder to respond before more commands are send in void loop
 
@@ -153,24 +154,24 @@ void loop()
       {
         azretrycount++;
         SendTheCommand();
-        delay(100);
+        delay(100);                  // DELAY HERE SEEMS TO BE CRITICAL - as to length of delay required, it needs some empirical
         ReceiveTheResponse();
         az_retry = validate_the_response("AZ");
 
-        Serial.print("stringtosend value is ");                       //here
-        Serial.println(stringtosend);
-        // delay(1000);
+        //  Serial.print("stringtosend value is ");                       //here
+        //  Serial.println(stringtosend);
+
 
         if (az_retry)
         {
-          Serial.println();
-          Serial.print("string ACTUALLY SENT IS ");                       //here
-          Serial.println(stringtosend);
+          //   Serial.println();
+          //  Serial.print("string ACTUALLY SENT IS ");                       //here
+          //   Serial.println(stringtosend);
 
           TransmitToDriver();
         }
-        Serial.print("Test print AZ retry counter value ");
-        Serial.println(azretrycount);
+        //  Serial.print("Test print AZ retry counter value ");
+        //  Serial.println(azretrycount);
       }
       // update the LCD
 
@@ -182,8 +183,7 @@ void loop()
       lcdprint(15, 0, stringtosend.substring(0, 4));                // the current azimuth is returned from the encoder
       lcdprint(0, 2, "No of AZ calls: " + String(azcount));
       // lcdprint(0, 3, blank);
-      // lcdprint(0, 3, "AZ interval " + String(azinterval, 0));
-      // last_update_time = millis();
+
 
       //reset counter on 9999
       if (azcount > 999)
@@ -237,24 +237,24 @@ void loop()
       {
         ssretrycount++;
         SendTheCommand();
-        delay(100);
+        delay(100);                  // DELAY HERE SEEMS TO BE CRITICAL - as to length of delay required, it needs some empirical
         ReceiveTheResponse();
         ss_retry = validate_the_response("SS");
 
-        Serial.print("stringtosend value is ");                       //here
-        Serial.println(stringtosend);
-        // delay(100);
+        //  Serial.print("stringtosend value is ");                       //here
+        //  Serial.println(stringtosend);
+
         if (ss_retry)
         {
 
-          Serial.println();
-          Serial.print("string ACTUALLY SENT IS ");                       //here
-          Serial.println(stringtosend);
+          //     Serial.println();
+          //     Serial.print("string ACTUALLY SENT IS ");                       //here
+          //     Serial.println(stringtosend);
           TransmitToDriver();
 
         }
-        Serial.print("Test print SS retry counter value ");
-        Serial.println(ssretrycount);
+        //   Serial.print("Test print SS retry counter value ");
+        //   Serial.println(ssretrycount);
       }
 
       //update lcd
@@ -314,7 +314,7 @@ void TransmitToDriver()
 {
   //Serial.print ("the string sent to driver is ");
 
-  Serial.print ("TAKE THIS OUT " + stringtosend);             // print value to serial, for the driver
+  Serial.print (stringtosend);             // print value to serial, for the driver
   // the string terminator # is already part of the string received from encoder
 
 
