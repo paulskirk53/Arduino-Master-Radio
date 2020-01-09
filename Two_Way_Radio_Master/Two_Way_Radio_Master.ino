@@ -71,15 +71,17 @@ void setup()
   radio.openReadingPipe(1, Master_address);  //NEED 1 for shared addresses
   //new
   radio.openWritingPipe(Encoder_address);
-  //theCommand[0] = 'T';                           // note single quote use
-  //theCommand[1] = 'S';
-  //theCommand[2] = 'T';
-  //theCommand[3] = '#';
-  //SendTheCommand();
-  //ReceiveTheResponse();
-  //lcdprint(0, 0, "Comms check         ");
-  //lcdprint(0, 1, stringtosend);
-
+  theCommand[0] = 'T';                           // note single quote use
+  theCommand[1] = 'S';
+  theCommand[2] = 'T';
+  theCommand[3] = '#';
+  SendTheCommand();
+  ReceiveTheResponse();
+  lcdprint(0, 0, "Comms check         ");
+  lcdprint(0, 1, stringtosend);
+  initialisethecommand_to_null();
+  initialisetheresponse_to_null();
+  Message = "";
   stringtosend = "";
   //end new
 
@@ -157,7 +159,7 @@ void loop()
 
         Serial.print("stringtosend value is ");                       //here
         Serial.println(stringtosend);
-       // delay(1000);
+        // delay(1000);
 
         if (az_retry)
         {
@@ -241,7 +243,7 @@ void loop()
 
         Serial.print("stringtosend value is ");                       //here
         Serial.println(stringtosend);
-       // delay(100);
+        // delay(100);
         if (ss_retry)
         {
 
@@ -276,6 +278,14 @@ void initialisethecommand_to_null()
   }
 } // end void initialisethecommand_to_null
 
+void initialisetheresponse_to_null()
+{
+  for ( int i = 0; i < 32; i++)                          // initialise the command array back to nulls
+  {
+    response[i] = 0;
+  }
+} // end void initialisetheresponse_to_null
+
 
 void SendTheCommand()
 {
@@ -294,6 +304,9 @@ void ReceiveTheResponse()
   radio.read(&response, sizeof(response));
 
   stringtosend = String(response) + '#';               // convert char to string for sending to driver
+
+  // initialise the response variable
+  initialisetheresponse_to_null();
 
 } // end void receivetheresponse
 
