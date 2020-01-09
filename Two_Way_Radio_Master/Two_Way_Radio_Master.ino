@@ -77,6 +77,7 @@ void setup()
   theCommand[2] = 'T';
   theCommand[3] = '#';
   SendTheCommand();
+  delay(100);                           //delay to receive the response
   ReceiveTheResponse();
   lcdprint(0, 0, "Comms check         ");
   lcdprint(0, 1, stringtosend);
