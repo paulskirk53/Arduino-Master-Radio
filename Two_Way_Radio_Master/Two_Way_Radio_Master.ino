@@ -58,7 +58,8 @@ void setup()
   // Print a message to the LCD.
   lcd.setCursor(0, 0);                    //remove - reinstate these 2 commands
   lcd.print("Master Radio V " + pkversion);
-
+  delay(1000);
+  
   //pinMode(PIN10, OUTPUT);                   // this is an NRF24L01 requirement if pin 10 is not used
   Serial.begin(19200);                       // this module uses the serial channel to Tx/ Rx commands from the Dome driver
   printf_begin();
@@ -177,7 +178,7 @@ void loop()
       SendTheCommand();
       lcdprint(0, 2, blank);
       lcdprint(0, 2, "Sent Open Shutter   ");
-     // lcdprint(0, 1, blank);
+      // lcdprint(0, 1, blank);
     }
 
 
@@ -190,7 +191,7 @@ void loop()
       theCommand[2] = '#';
       SendTheCommand();
       lcdprint(0, 2, "Sent Close Shutter  ");
-     // lcdprint(0, 1, blank);
+      // lcdprint(0, 1, blank);
     }
 
 
