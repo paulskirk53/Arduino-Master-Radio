@@ -75,26 +75,39 @@ void setup()
   radio.openWritingPipe(Encoder_address);
 
 
+  //new comms check below
+  //call the az routine and display az on the LCD
+  //delay 1 sec
+  //call the shutter routine and display status on the LCD
+  //delay 1 sec
+  lcdprint(0, 0, "Start Comms check   " );
+  delay(2000);
+  AZaction();
+  delay(2000);
+  SSaction();
+  delay(2000);
+  lcdprint(0, 0, "End Comms check     " );
+  delay(2000);
+  /*
+    theCommand[0] = 'T';                           // note single quote use
+    theCommand[1] = 'S';
+    theCommand[2] = 'T';
+    theCommand[3] = '#';
 
-  theCommand[0] = 'T';                           // note single quote use
-  theCommand[1] = 'S';
-  theCommand[2] = 'T';
-  theCommand[3] = '#';
+    SendTheCommand();
+    delay(100);                           //delay to receive the response
+    ReceiveTheResponse();
 
-  SendTheCommand();
-  delay(100);                           //delay to receive the response
-  ReceiveTheResponse();
+    lcdprint(0, 0, "Comms check " );
+    lcdprint(0, 1,  stringtosend.substring(0, 15));
+    initialisethecommand_to_null();
+    initialisetheresponse_to_null();
+    Message = "";
+    stringtosend = "";
 
-  lcdprint(0, 0, "Comms check " );
-  lcdprint(0, 1,  stringtosend.substring(0, 15));
-  initialisethecommand_to_null();
-  initialisetheresponse_to_null();
-  Message = "";
-  stringtosend = "";
-
-  delay (3000);     // delay for encoder to respond before more commands are send in void loop
-  lcdprint(0, 1,  blank);
-
+    delay (3000);     // delay for encoder to respond before more commands are send in void loop
+    lcdprint(0, 1,  blank);
+  */
 }
 
 void loop()
@@ -149,58 +162,7 @@ void loop()
 
     if (ReceivedData.indexOf("AZ", 0) > -1) // THE INDEX VALUE IS the value of the position of the string in receivedData, or -1 if the string not found
     {
-      Message = "AZ";                            // need to keep this as receivedData is initialised in calls below
-      //Serial.println("az");
-
-      radio.openWritingPipe(Encoder_address);
-      theCommand[0] = 'A';                             // note single quote use
-      theCommand[1] = 'Z';
-      theCommand[2] = '#';
-
-      bool az_retry = false;
-
-      while (az_retry == false )
-      {
-        azretrycount++;
-        SendTheCommand();
-        delay(100);                  // DELAY HERE SEEMS TO BE CRITICAL - as to length of delay required, it needs some empirical
-        ReceiveTheResponse();
-        az_retry = validate_the_response("AZ");
-
-        //      Serial.print("stringtosend value is ");                       //here
-        //    Serial.println(stringtosend);
-
-
-        if (az_retry)
-        {
-          //   Serial.println();
-          //  Serial.print("string ACTUALLY SENT IS ");                       //here
-          //   Serial.println(stringtosend);
-
-          TransmitToDriver();
-        }
-        //  Serial.print("Test print AZ retry counter value ");
-        //  Serial.println(azretrycount);
-      }
-      // update the LCD
-
-
-      azcount++;                                               // TRACE ON OPEN BRACE {stringtosend.substring(0, 7)}
-      lcdprint(0, 0, blank);
-      lcdprint(0, 0, "Sent AZ, Rec'd ");
-
-      lcdprint(15, 0, stringtosend.substring(0, 4));                // the current azimuth is returned from the encoder
-      lcdprint(0, 2, "No of AZ calls: " + String(azcount));
-      // lcdprint(0, 3, blank);
-
-
-      //reset counter on 9999
-      if (azcount > 999)
-      {
-        azcount = 0;
-      }
-
-      Message = "";
+      AZaction();
 
     }  //endif received AZ
 
@@ -213,9 +175,9 @@ void loop()
       theCommand[1] = 'S';
       theCommand[2] = '#';
       SendTheCommand();
-      lcdprint(0, 0, blank);
-      lcdprint(0, 0, "Sent Open Shutter   ");
-      lcdprint(0, 1, blank);
+      lcdprint(0, 2, blank);
+      lcdprint(0, 2, "Sent Open Shutter   ");
+     // lcdprint(0, 1, blank);
     }
 
 
@@ -227,51 +189,14 @@ void loop()
       theCommand[1] = 'S';
       theCommand[2] = '#';
       SendTheCommand();
-      lcdprint(0, 0, "Sent Close Shutter  ");
-      lcdprint(0, 1, blank);
+      lcdprint(0, 2, "Sent Close Shutter  ");
+     // lcdprint(0, 1, blank);
     }
 
 
     if (ReceivedData.indexOf("SS", 0) > -1) // THE INDEX VALUE IS the value of the position of the string in receivedData, or -1 if the string not found
     {
-
-      radio.openWritingPipe(Shutter_address);
-      theCommand[0] = 'S';                           // note single quote use
-      theCommand[1] = 'S';
-      theCommand[2] = '#';
-
-      bool ss_retry = false;
-
-      while (ss_retry == false )
-      {
-        ssretrycount++;
-        SendTheCommand();
-        delay(100);                  // DELAY HERE SEEMS TO BE CRITICAL - as to length of delay required, it needs some empirical
-        ReceiveTheResponse();
-        ss_retry = validate_the_response("SS");
-
-        //  Serial.print("stringtosend value is ");                       //here
-        //  Serial.println(stringtosend);
-
-        if (ss_retry)
-        {
-
-          //     Serial.println();
-          //     Serial.print("string ACTUALLY SENT IS ");                       //here
-          //     Serial.println(stringtosend);
-          TransmitToDriver();
-
-        }
-        //   Serial.print("Test print SS retry counter value ");
-        //   Serial.println(ssretrycount);
-      }
-
-      //update lcd
-      lcdprint(0, 0, "Sent Status ?:      ");
-      lcdprint(0, 1, blank);
-      lcdprint(0, 1, "Received: ");
-      lcdprint(10, 1, stringtosend.substring(0, 7));
-
+      SSaction();
     }// end if receiveddata
 
   } //end if serial available
@@ -385,3 +310,102 @@ bool validate_the_response(String receipt)
   }
 
 }
+void AZaction()
+{
+
+  Message = "AZ";                            // need to keep this as receivedData is initialised in calls below
+  //Serial.println("az");
+
+  radio.openWritingPipe(Encoder_address);
+  theCommand[0] = 'A';                             // note single quote use
+  theCommand[1] = 'Z';
+  theCommand[2] = '#';
+
+  bool az_retry = false;
+
+  while (az_retry == false )
+  {
+    azretrycount++;
+    SendTheCommand();
+    delay(100);                  // DELAY HERE SEEMS TO BE CRITICAL - as to length of delay required, it needs some empirical
+    ReceiveTheResponse();
+    az_retry = validate_the_response("AZ");
+
+    //      Serial.print("stringtosend value is ");                       //here
+    //    Serial.println(stringtosend);
+
+
+    if (az_retry)
+    {
+      //   Serial.println();
+      //  Serial.print("string ACTUALLY SENT IS ");                       //here
+      //   Serial.println(stringtosend);
+
+      TransmitToDriver();
+    }
+    //  Serial.print("Test print AZ retry counter value ");
+    //  Serial.println(azretrycount);
+  }
+  // update the LCD
+
+
+  azcount++;                                               // TRACE ON OPEN BRACE {stringtosend.substring(0, 7)}
+  lcdprint(0, 0, blank);
+  lcdprint(0, 0, "Sent AZ, Rec'd ");
+
+  lcdprint(15, 0, stringtosend.substring(0, 4));                // the current azimuth is returned from the encoder
+  lcdprint(0, 1, "No of AZ calls: " + String(azcount));
+  // lcdprint(0, 3, blank);
+
+
+  //reset counter on 9999
+  if (azcount > 999)
+  {
+    azcount = 0;
+  }
+
+  Message = "";
+
+}                                                  //end void AZaction
+
+void SSaction()
+{
+  radio.openWritingPipe(Shutter_address);
+  theCommand[0] = 'S';                           // note single quote use
+  theCommand[1] = 'S';
+  theCommand[2] = '#';
+
+  bool ss_retry = false;
+
+  while (ss_retry == false )
+  {
+    ssretrycount++;
+    SendTheCommand();
+    delay(100);                  // DELAY HERE SEEMS TO BE CRITICAL - as to length of delay required, it needs some empirical
+    ReceiveTheResponse();
+    ss_retry = validate_the_response("SS");
+
+    //  Serial.print("stringtosend value is ");                       //here
+    //  Serial.println(stringtosend);
+
+    if (ss_retry)
+    {
+
+      //     Serial.println();
+      //     Serial.print("string ACTUALLY SENT IS ");                       //here
+      //     Serial.println(stringtosend);
+      TransmitToDriver();
+
+    }
+    //   Serial.print("Test print SS retry counter value ");
+    //   Serial.println(ssretrycount);
+  }
+
+  //update lcd
+  lcdprint(0, 2, "Sent Status ?:      ");
+  //lcdprint(0, 1, blank);
+  lcdprint(0, 3, "Received: ");
+  lcdprint(12, 3, stringtosend.substring(0, 7));
+
+
+}   // end void SSaction
