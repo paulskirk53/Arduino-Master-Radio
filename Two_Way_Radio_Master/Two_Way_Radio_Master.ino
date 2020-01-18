@@ -38,7 +38,7 @@ const byte Shutter_address[6] = "shutt";     // the address used to write to the
 const byte Master_address[6]  = "mastr";
 String  ReceivedData  = "";
 String Message = "";
-String stringtosend;
+String stringtosend = "";
 String blank = "                    ";
 String pkversion = "1.0";
 
@@ -56,7 +56,7 @@ void setup()
   // set up the LCD's number of columns and rows:
   lcd.begin(20, 4);
   // Print a message to the LCD.
-  lcd.setCursor(0, 0);
+  lcd.setCursor(0, 0);                    //remove - reinstate these 2 commands
   lcd.print("Master Radio V " + pkversion);
 
   //pinMode(PIN10, OUTPUT);                   // this is an NRF24L01 requirement if pin 10 is not used
@@ -73,22 +73,27 @@ void setup()
   radio.openReadingPipe(1, Master_address);  //NEED 1 for shared addresses
   //new
   radio.openWritingPipe(Encoder_address);
+
+
+
   theCommand[0] = 'T';                           // note single quote use
   theCommand[1] = 'S';
   theCommand[2] = 'T';
   theCommand[3] = '#';
+
   SendTheCommand();
   delay(100);                           //delay to receive the response
   ReceiveTheResponse();
-  lcdprint(0, 0, "Comms check         ");
-  lcdprint(0, 1, stringtosend);
+
+  lcdprint(0, 0, "Comms check " );
+  lcdprint(0, 1,  stringtosend.substring(0, 15));
   initialisethecommand_to_null();
   initialisetheresponse_to_null();
   Message = "";
   stringtosend = "";
 
-
   delay (3000);     // delay for encoder to respond before more commands are send in void loop
+  lcdprint(0, 1,  blank);
 
 }
 
@@ -145,6 +150,8 @@ void loop()
     if (ReceivedData.indexOf("AZ", 0) > -1) // THE INDEX VALUE IS the value of the position of the string in receivedData, or -1 if the string not found
     {
       Message = "AZ";                            // need to keep this as receivedData is initialised in calls below
+      //Serial.println("az");
+
       radio.openWritingPipe(Encoder_address);
       theCommand[0] = 'A';                             // note single quote use
       theCommand[1] = 'Z';
@@ -160,8 +167,8 @@ void loop()
         ReceiveTheResponse();
         az_retry = validate_the_response("AZ");
 
-        //  Serial.print("stringtosend value is ");                       //here
-        //  Serial.println(stringtosend);
+        //      Serial.print("stringtosend value is ");                       //here
+        //    Serial.println(stringtosend);
 
 
         if (az_retry)
