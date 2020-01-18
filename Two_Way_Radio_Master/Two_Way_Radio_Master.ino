@@ -1,4 +1,4 @@
-//Version 1.0 - change the pkversion variable too.
+//Version 2.0 - change the pkversion variable too.
 //this is the MASTER v3 branch created 4-1-2020
 //TEST SERIAL PRINTS were removed 9-1-20 and the sketch uploaded and tested for Radio TX and Rx only - tests ok
 // when delay(100) was removed in the two retry sections, the sketch did not work
@@ -40,7 +40,7 @@ String  ReceivedData  = "";
 String Message = "";
 String stringtosend = "";
 String blank = "                    ";
-String pkversion = "1.0";
+String pkversion = "2.0";
 
 bool tx_sent;
 char theCommand[32] = "";                    // confusingly, you can initialise a char array in this way, but later in code, it is not possible to assign in this way.
