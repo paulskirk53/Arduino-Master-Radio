@@ -89,26 +89,7 @@ void setup()
   delay(2000);
   lcdprint(0, 0, "End Comms check     " );
   delay(2000);
-  /*
-    theCommand[0] = 'T';                           // note single quote use
-    theCommand[1] = 'S';
-    theCommand[2] = 'T';
-    theCommand[3] = '#';
-
-    SendTheCommand();
-    delay(100);                           //delay to receive the response
-    ReceiveTheResponse();
-
-    lcdprint(0, 0, "Comms check " );
-    lcdprint(0, 1,  stringtosend.substring(0, 15));
-    initialisethecommand_to_null();
-    initialisetheresponse_to_null();
-    Message = "";
-    stringtosend = "";
-
-    delay (3000);     // delay for encoder to respond before more commands are send in void loop
-    lcdprint(0, 1,  blank);
-  */
+  
 }
 
 void loop()
