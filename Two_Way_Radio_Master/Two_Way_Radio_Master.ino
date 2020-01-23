@@ -29,13 +29,16 @@ const int rs = 27, en = 26, d4 = 25, d5 = 24, d6 = 23, d7 = 22;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
 
-
 #define PIN10  10
 
 RF24 radio(7, 8);                            // CE, CSN
 const byte Encoder_address[6] = "encod";     // the address used to write to the encoder arduino board
 const byte Shutter_address[6] = "shutt";     // the address used to write to the shutter arduino board
 const byte Master_address[6]  = "mastr";
+
+const int channel = 115;
+
+
 String  ReceivedData  = "";
 String Message = "";
 String stringtosend = "";
@@ -65,7 +68,7 @@ void setup()
   printf_begin();
 
   radio.begin();
-  radio.setChannel(100);                     // ensure it matches the target host causes sketch to hang
+  radio.setChannel(channel);                     // ensure it matches the target host causes sketch to hang
   radio.enableAckPayload();
   radio.setDataRate(RF24_250KBPS);           // set RF datarate
   radio.setPALevel(RF24_PA_LOW);
