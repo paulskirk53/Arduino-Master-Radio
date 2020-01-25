@@ -63,6 +63,7 @@ void setup()
   lcd.print("Master Radio V " + pkversion);
   delay(1000);
   
+  SPI.begin();
   //pinMode(PIN10, OUTPUT);                   // this is an NRF24L01 requirement if pin 10 is not used
   Serial.begin(19200);                       // this module uses the serial channel to Tx/ Rx commands from the Dome driver
   printf_begin();
