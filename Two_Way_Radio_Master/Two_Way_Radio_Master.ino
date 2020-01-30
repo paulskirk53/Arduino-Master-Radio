@@ -16,7 +16,7 @@
 //
 
 #include <SPI.h>
-#include <nRF24L01.h>
+//#include <nRF24L01.h>
 #include <RF24.h>
 #include <LiquidCrystal.h>
 #include <printf.h>
@@ -54,6 +54,7 @@ int azcount = 0;
 double ssretrycount = 0;
 double azretrycount = 0;
 
+
 void setup()
 {
   // set up the LCD's number of columns and rows:
@@ -82,7 +83,7 @@ void setup()
 
   //new comms check below
   //call the az routine and display az on the LCD
-  //delay 1 sec
+  
   //call the shutter routine and display status on the LCD
   //delay 1 sec
   lcdprint(0, 0, "Start Comms check   " );
@@ -240,7 +241,13 @@ void TransmitToDriver()
 
 }   // end void transmit to driver
 
-void lcdprint(int col, int row, String mess)
+
+
+
+
+
+  void lcdprint(int col, int row, String mess)
+ 
 {
   //lcd.clear();
   lcd.setCursor(col, row);
@@ -257,6 +264,7 @@ void TransmissionFailure()
   // write this to LCD Serial.println("[-] The transmission to the selected node failed.");
   // need to think about what to do if tx fails
 }
+
 bool validate_the_response(String receipt)
 {
 
