@@ -1,5 +1,10 @@
 //Version 2.0 - change the pkversion variable too.
 //this is the MASTER v3 branch created 4-1-2020
+
+//4-feb-20 - todo look to include the number of radio resets on the LCD
+
+
+
 //TEST SERIAL PRINTS were removed 9-1-20 and the sketch uploaded and tested for Radio TX and Rx only - tests ok
 // when delay(100) was removed in the two retry sections, the sketch did not work
 /*
@@ -16,7 +21,7 @@
 //
 
 #include <SPI.h>
-//#include <nRF24L01.h>
+
 #include <RF24.h>
 #include <LiquidCrystal.h>
 #include <printf.h>
@@ -63,27 +68,18 @@ void setup()
   lcd.setCursor(0, 0);                    //remove - reinstate these 2 commands
   lcd.print("Master Radio V " + pkversion);
   delay(1000);
-  
+
   SPI.begin();
   //pinMode(PIN10, OUTPUT);                   // this is an NRF24L01 requirement if pin 10 is not used
   Serial.begin(19200);                       // this module uses the serial channel to Tx/ Rx commands from the Dome driver
   printf_begin();
 
-  radio.begin();
-  radio.setChannel(channel);                     // ensure it matches the target host causes sketch to hang
-  radio.enableAckPayload();
-  radio.setDataRate(RF24_250KBPS);           // set RF datarate
-  radio.setPALevel(RF24_PA_LOW);
-  radio.setRetries(15, 15);                  // time between tries and No of tries
-  radio.enableDynamicPayloads();             // needs this for acknowledge to work
-  radio.openReadingPipe(1, Master_address);  //NEED 1 for shared addresses
-  //new
-  radio.openWritingPipe(Encoder_address);
+  configureRadio();
 
 
   //new comms check below
   //call the az routine and display az on the LCD
-  
+
   //call the shutter routine and display status on the LCD
   //delay 1 sec
   lcdprint(0, 0, "Start Comms check   " );
@@ -94,11 +90,29 @@ void setup()
   delay(2000);
   lcdprint(0, 0, "End Comms check     " );
   delay(2000);
-  
-}
+
+}  // end setup
+
+
+uint32_t configTimer =  millis();
+
+
 
 void loop()
 {
+
+  if (radio.failureDetected)    // if failure has been set in one of three situations, restart the radio.
+  {
+    radio.failureDetected = false;
+    delay(250);
+    // Serial.println("Radio failure detected, restarting radio");
+    configureRadio();
+  }
+
+  TestforlostRadioConfiguration();      //check for lost radio config every 5 seconds - may wish to change this time interval
+
+
+
   /*  radio.printDetails();
 
     while(1);{}  //just used to stop everything in order to view the print.details
@@ -221,8 +235,50 @@ void SendTheCommand()
 
 void ReceiveTheResponse()
 {
+  // new checks fromNRF24l01_failureDetect sketch - This is fail modes 2 and 3 :
+  // 2  - response Timeout (i.e. we wait forever for the response back from the encoder or the shutter)
+  // 3 -  the Radio is always available error
 
-  radio.read(&response, sizeof(response));
+  // Note that void SendTheCommand() sets radio.startListening(), so we are in listening mode at the start of this routine - ReceiveTheResponse()
+
+  // 2 - response timeout check first:
+
+  unsigned long started_waiting_at = micros();               // Set up a timeout period, get the current microseconds
+  boolean timeout = false;                                   // Set up a variable to indicate if a response was received or not
+
+  while ( ! radio.available() )
+  { // While nothing is received
+    if (micros() - started_waiting_at > 200000 )
+    { // If waited longer than 200ms, indicate timeout and exit while loop
+      timeout = true;                  // radio has failed, flag set below.
+      break;
+    }
+  }
+
+  if ( timeout )
+  { // set the flag
+    radio.failureDetected = true;           // Serial.println("Radio timeout failure detected");
+  }
+  else
+  {
+    // Grab the response.
+
+    //3 - radio always available Failure:
+    uint32_t failTimer = millis();
+    while (radio.available())                //If available always returns true after a radio.read, there is a problem.
+    {
+      if (millis() - failTimer > 250)
+      {
+        radio.failureDetected = true;        // set the flag
+                                             // Serial.println("Radio available failure detected");
+        break;
+      }
+
+      radio.read(&response, sizeof(response));   //if all well, the read happens on the first iteration of the while loop and radio.available is cleared.
+    }
+
+  }
+
 
   stringtosend = String(response) + '#';               // convert char to string for sending to driver
 
@@ -241,13 +297,8 @@ void TransmitToDriver()
 
 }   // end void transmit to driver
 
+void lcdprint(int col, int row, String mess)
 
-
-
-
-
-  void lcdprint(int col, int row, String mess)
- 
 {
   //lcd.clear();
   lcd.setCursor(col, row);
@@ -403,3 +454,39 @@ void SSaction()
 
 
 }   // end void SSaction
+
+void configureRadio()
+{
+  //modified to reflect the master radio
+
+  radio.begin();
+  // Set the PA Level low to prevent power supply related issues since this is a
+  // getting_started sketch, and the likelihood of close proximity of the devices. RF24_PA_MAX is default.
+  radio.begin();
+  radio.setChannel(channel);                     // ensure it matches the target host causes sketch to hang
+  radio.enableAckPayload();
+  radio.setDataRate(RF24_250KBPS);           // set RF datarate
+  radio.setPALevel(RF24_PA_LOW);
+  radio.setRetries(15, 15);                  // time between tries and No of tries
+  radio.enableDynamicPayloads();             // needs this for acknowledge to work
+  radio.openReadingPipe(1, Master_address);  //NEED 1 for shared addresses
+  //new
+  radio.openWritingPipe(Encoder_address);
+
+}
+
+void TestforlostRadioConfiguration()   // this is one of the known failure modes for the NRF24l01+
+{
+
+  if (millis() - configTimer > 5000)
+  {
+    configTimer = millis();
+    if (radio.getChannel() != 115)   // first possible radio error - the configuration has been lost. This can be checked
+      // by testing whether a non default setting has returned to the default - for channel the default is 78?
+    {
+      radio.failureDetected = true;
+      Serial.print("Radio configuration error detected");
+    }
+  }
+
+}
