@@ -2,7 +2,8 @@
 //this is the MASTER v3 branch created 4-1-2020
 
 //4-feb-20 - todo look to include the number of radio resets on the LCD
-
+//Need to think about errors occuring when there is a send and no receive expected e.g. OS, CS and SS(?)
+//one way would be to expect a response from the command processor
 
 
 //TEST SERIAL PRINTS were removed 9-1-20 and the sketch uploaded and tested for Radio TX and Rx only - tests ok
@@ -44,21 +45,21 @@ const byte Master_address[6]  = "mastr";
 const int channel = 115;
 
 
-String  ReceivedData  = "";
-String Message = "";
-String stringtosend = "";
-String blank = "                    ";
-String pkversion = "2.0";
+String ReceivedData  = "";
+String Message       = "";
+String stringtosend  = "";
+String blank         = "                    ";
+String pkversion     = "2.0";
 
 bool tx_sent;
-char theCommand[32] = "";                    // confusingly, you can initialise a char array in this way, but later in code, it is not possible to assign in this way.
+char theCommand[32]  = "";                    // confusingly, you can initialise a char array in this way, but later in code, it is not possible to assign in this way.
 
-char response[32] = "";
+char response[32]    = "";
 
-int azcount = 0;
-double ssretrycount = 0;
-double azretrycount = 0;
-
+int azcount          = 0;
+double ssretrycount  = 0;
+double azretrycount  = 0;
+bool timeout = false;
 
 void setup()
 {
@@ -104,6 +105,7 @@ void loop()
   if (radio.failureDetected)    // if failure has been set in one of three situations, restart the radio.
   {
     radio.failureDetected = false;
+    timeout = false;
     delay(250);
     // Serial.println("Radio failure detected, restarting radio");
     configureRadio();
@@ -242,18 +244,13 @@ void ReceiveTheResponse()
   // Note that void SendTheCommand() sets radio.startListening(), so we are in listening mode at the start of this routine - ReceiveTheResponse()
 
   // 2 - response timeout check first:
+// put the variable defs and while loop into a procedure and call it here and also where there are sends with no receive expected
 
-  unsigned long started_waiting_at = micros();               // Set up a timeout period, get the current microseconds
-  boolean timeout = false;                                   // Set up a variable to indicate if a response was received or not
 
-  while ( ! radio.available() )
-  { // While nothing is received
-    if (micros() - started_waiting_at > 200000 )
-    { // If waited longer than 200ms, indicate timeout and exit while loop
-      timeout = true;                  // radio has failed, flag set below.
-      break;
-    }
-  }
+
+//check if a response has been received (case 2) and set the timeout flag if not
+
+CheckifResponseReceived();
 
   if ( timeout )
   { // set the flag
@@ -263,7 +260,7 @@ void ReceiveTheResponse()
   {
     // Grab the response.
 
-    //3 - radio always available Failure:
+    //check for failure 3 - radio always available Failure:
     uint32_t failTimer = millis();
     while (radio.available())                //If available always returns true after a radio.read, there is a problem.
     {
@@ -485,7 +482,23 @@ void TestforlostRadioConfiguration()   // this is one of the known failure modes
       // by testing whether a non default setting has returned to the default - for channel the default is 78?
     {
       radio.failureDetected = true;
-      Serial.print("Radio configuration error detected");
+      //Serial.print("Radio configuration error detected");
+    }
+  }
+
+}
+void CheckifResponseReceived()
+{
+
+  unsigned long started_waiting_at = micros();               // Set up a timeout period, get the current microseconds
+                                    // Set up a variable to indicate if a response was received or not
+
+  while ( ! radio.available() )
+  { // While nothing is received
+    if (micros() - started_waiting_at > 200000 )
+    { // If waited longer than 200ms, indicate timeout and exit while loop
+      timeout = true;                  // radio has failed, flag set in receivetheResponse().
+      break;
     }
   }
 
