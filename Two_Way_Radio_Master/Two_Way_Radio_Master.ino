@@ -1,3 +1,4 @@
+//todo - radio failure has a call to config - which has been commented out - check if this is required and if so what parameter will be passed - encod or shutt
 //Version 2.0 - change the pkversion variable too.
 //this is the MASTER v3 branch created 4-1-2020
 
@@ -49,8 +50,8 @@ String ReceivedData  = "";
 String Message       = "";
 String stringtosend  = "";
 String blank         = "                    ";
-String pkversion     = "2.0";
-
+String pkversion     = "3.0";
+String NodeAddress   = "";
 bool tx_sent;
 char theCommand[32]  = "";                    // confusingly, you can initialise a char array in this way, but later in code, it is not possible to assign in this way.
 
@@ -59,6 +60,8 @@ char response[32]    = "";
 int azcount          = 0;
 double ssretrycount  = 0;
 double azretrycount  = 0;
+int FailureCount     = 0;
+
 bool timeout = false;
 
 void setup()
@@ -75,21 +78,11 @@ void setup()
   Serial.begin(19200);                       // this module uses the serial channel to Tx/ Rx commands from the Dome driver
   printf_begin();
 
-  configureRadio();
+  ConfigureRadio("encod");
 
 
-  //new comms check below
-  //call the az routine and display az on the LCD
 
-  //call the shutter routine and display status on the LCD
-  //delay 1 sec
-  lcdprint(0, 0, "Start Comms check   " );
-  delay(2000);
-  AZaction();
-  delay(2000);
-  SSaction();
-  delay(2000);
-  lcdprint(0, 0, "End Comms check     " );
+  lcdprint(0, 0, "MCU version" + pkversion );
   delay(2000);
 
 }  // end setup
@@ -102,16 +95,10 @@ uint32_t configTimer =  millis();
 void loop()
 {
 
-  if (radio.failureDetected)    // if failure has been set in one of three situations, restart the radio.
-  {
-    radio.failureDetected = false;
-    timeout = false;
-    delay(250);
-    // Serial.println("Radio failure detected, restarting radio");
-    configureRadio();
-  }
+  NodeAddress = "";
+  RadioFailureCheck();
 
-  TestforlostRadioConfiguration();      //check for lost radio config every 5 seconds - may wish to change this time interval
+  //move this to az, ss, os, cs TestforlostRadioConfiguration(NodeAddress);      //check for lost radio config - remove the timer
 
 
 
@@ -165,6 +152,8 @@ void loop()
 
     if (ReceivedData.indexOf("AZ", 0) > -1) // THE INDEX VALUE IS the value of the position of the string in receivedData, or -1 if the string not found
     {
+      NodeAddress = "encod";
+      TestforlostRadioConfiguration(NodeAddress);
       AZaction();
 
     }  //endif received AZ
@@ -172,7 +161,8 @@ void loop()
 
     if (ReceivedData.indexOf("OS", 0) > -1) // THE INDEX VALUE IS the value of the position of the string in receivedData, or -1 if the string not found
     {
-
+      NodeAddress = "shutt";
+      TestforlostRadioConfiguration(NodeAddress);
       radio.openWritingPipe(Shutter_address);
       theCommand[0] = 'O';                           // note single quote use
       theCommand[1] = 'S';
@@ -181,6 +171,7 @@ void loop()
       lcdprint(0, 2, blank);
       lcdprint(0, 2, "Sent Open Shutter   ");
       // lcdprint(0, 1, blank);
+
     }
 
 
@@ -188,6 +179,10 @@ void loop()
     {
 
       radio.openWritingPipe(Shutter_address);
+
+      NodeAddress = "shutt";
+      TestforlostRadioConfiguration(NodeAddress);
+
       theCommand[0] = 'C';                           // note single quote use
       theCommand[1] = 'S';
       theCommand[2] = '#';
@@ -199,6 +194,8 @@ void loop()
 
     if (ReceivedData.indexOf("SS", 0) > -1) // THE INDEX VALUE IS the value of the position of the string in receivedData, or -1 if the string not found
     {
+      NodeAddress = "shutt";
+      TestforlostRadioConfiguration(NodeAddress);
       SSaction();
     }// end if receiveddata
 
@@ -235,7 +232,7 @@ void SendTheCommand()
 
 }
 
-void ReceiveTheResponse()
+void ReceiveTheResponse()    // this routine reads the radio for an expected transmission
 {
   // new checks fromNRF24l01_failureDetect sketch - This is fail modes 2 and 3 :
   // 2  - response Timeout (i.e. we wait forever for the response back from the encoder or the shutter)
@@ -244,35 +241,29 @@ void ReceiveTheResponse()
   // Note that void SendTheCommand() sets radio.startListening(), so we are in listening mode at the start of this routine - ReceiveTheResponse()
 
   // 2 - response timeout check first:
-// put the variable defs and while loop into a procedure and call it here and also where there are sends with no receive expected
+  // put the variable defs and while loop into a procedure and call it here and also where there are sends with no receive expected
 
 
 
-//check if a response has been received (case 2) and set the timeout flag if not
+  //check if a response has been received (case 2) and set the timeout flag if not
 
-CheckifResponseReceived();
+  CheckifResponseReceived();     //sets timeout if no response
 
   if ( timeout )
   { // set the flag
     radio.failureDetected = true;           // Serial.println("Radio timeout failure detected");
+    // call the radio restart from here
+    ConfigureRadio(NodeAddress);                   //restart the radio
   }
-  else
+  else    // there was no timeout and a Tx has been received.
   {
     // Grab the response.
 
     //check for failure 3 - radio always available Failure:
-    uint32_t failTimer = millis();
-    while (radio.available())                //If available always returns true after a radio.read, there is a problem.
-    {
-      if (millis() - failTimer > 250)
-      {
-        radio.failureDetected = true;        // set the flag
-                                             // Serial.println("Radio available failure detected");
-        break;
-      }
+    //*************  Note that this routine READS the response *************
+    //
+    CheckforRadioAlwaysAvailableError();
 
-      radio.read(&response, sizeof(response));   //if all well, the read happens on the first iteration of the while loop and radio.available is cleared.
-    }
 
   }
 
@@ -281,6 +272,8 @@ CheckifResponseReceived();
 
   // initialise the response variable
   initialisetheresponse_to_null();
+
+  RadioFailureCheck();
 
 } // end void receivetheresponse
 
@@ -444,19 +437,23 @@ void SSaction()
   }
 
   //update lcd
-  lcdprint(0, 2, "Sent Status ?:      ");
+  lcdprint(0, 2, "Sent Status:");
   //lcdprint(0, 1, blank);
-  lcdprint(0, 3, "Received: ");
-  lcdprint(12, 3, stringtosend.substring(0, 7));
 
+  lcdprint(13, 2, stringtosend.substring(0, 6));
+  lcdprint(0, 3, "Reset count:");
+  lcdprint(13, 3, String(FailureCount));
 
 }   // end void SSaction
 
-void configureRadio()
+void ConfigureRadio(String Address)                   //call this in Setup and then if there's a radio failure
 {
   //modified to reflect the master radio
 
-  radio.begin();
+  radio.powerDown();
+  delay(20);
+  radio.powerUp();
+  delay(20);
   // Set the PA Level low to prevent power supply related issues since this is a
   // getting_started sketch, and the likelihood of close proximity of the devices. RF24_PA_MAX is default.
   radio.begin();
@@ -468,30 +465,38 @@ void configureRadio()
   radio.enableDynamicPayloads();             // needs this for acknowledge to work
   radio.openReadingPipe(1, Master_address);  //NEED 1 for shared addresses
   //new
-  radio.openWritingPipe(Encoder_address);
-
+  if (Address == "encod")
+  {
+    radio.openWritingPipe(Encoder_address);
+  }
+  else
+  {
+    radio.openWritingPipe(Shutter_address);
+  }
 }
 
-void TestforlostRadioConfiguration()   // this is one of the known failure modes for the NRF24l01+
+
+void TestforlostRadioConfiguration(String NodeAddress)   // this tests for the radio losing its configuration - one of the known failure modes for the NRF24l01+
 {
 
   if (millis() - configTimer > 5000)
   {
     configTimer = millis();
     if (radio.getChannel() != 115)   // first possible radio error - the configuration has been lost. This can be checked
-      // by testing whether a non default setting has returned to the default - for channel the default is 78?
+      // by testing whether a non default setting has returned to the default - for channel the default is 76
     {
       radio.failureDetected = true;
-      //Serial.print("Radio configuration error detected");
+      Serial.print("Radio configuration error detected");
+      ConfigureRadio(NodeAddress);
     }
   }
 
 }
-void CheckifResponseReceived()
+void CheckifResponseReceived()    // this is a timeout checker - call it after a write and startlistening
 {
 
   unsigned long started_waiting_at = micros();               // Set up a timeout period, get the current microseconds
-                                    // Set up a variable to indicate if a response was received or not
+  // Set up a variable to indicate if a response was received or not
 
   while ( ! radio.available() )
   { // While nothing is received
@@ -499,7 +504,47 @@ void CheckifResponseReceived()
     { // If waited longer than 200ms, indicate timeout and exit while loop
       timeout = true;                  // radio has failed, flag set in receivetheResponse().
       break;
+
     }
+
   }
 
 }
+
+void RadioFailureCheck()        // this resets the timeout and failure count
+{
+
+  if (radio.failureDetected)    // if failure has been set in one of three situations, restart the radio.
+  {
+    radio.failureDetected = false;
+    timeout = false;
+    //delay(250);
+    //Serial.println("Radio failure detected, restarting radio");
+    // configureRadio();
+    FailureCount++;
+    if (FailureCount > 99)
+    {
+      FailureCount = 0;
+    }
+  }
+}
+void CheckforRadioAlwaysAvailableError()
+{
+
+
+  uint32_t failTimer = millis();
+  while (radio.available())                //If available always returns true after a radio.read, there is a problem.
+  {
+    if (millis() - failTimer > 250)
+    {
+      radio.failureDetected = true;        // set the flag
+      // call the radio restart from here
+      Serial.println("Radio available failure detected");
+      ConfigureRadio(NodeAddress);                   //restart the radio
+      break;
+    }
+
+    radio.read(&response, sizeof(response));  //if all well, the read happens on the first iteration of the while loop and radio.available is cleared.
+  }
+}
+//need this to stop stino stupid error :insert new code before this line
