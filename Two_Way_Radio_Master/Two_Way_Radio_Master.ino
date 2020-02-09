@@ -1,5 +1,5 @@
 //todo - radio failure has a call to config - which has been commented out - check if this is required and if so what parameter will be passed - encod or shutt
-//Version 2.0 - change the pkversion variable too.
+//Version 4.0 9-2-20 - change the pkversion variable too.
 //this is the MASTER v3 branch created 4-1-2020
 
 //4-feb-20 - todo look to include the number of radio resets on the LCD
@@ -50,7 +50,7 @@ String ReceivedData  = "";
 String Message       = "";
 String stringtosend  = "";
 String blank         = "                    ";
-String pkversion     = "3.0";
+String pkversion     = "4.0";
 String NodeAddress   = "";
 bool tx_sent;
 char theCommand[32]  = "";                    // confusingly, you can initialise a char array in this way, but later in code, it is not possible to assign in this way.
@@ -325,17 +325,29 @@ bool validate_the_response(String receipt)
 
   if (receipt == "SS")
   {
-    if ( (stringtosend.indexOf("OPEN#", 0) > -1) | (stringtosend.indexOf("CLOSED#", 0) > -1) )
+    if ( (stringtosend.indexOf("OPEN#", 0) > -1) | (stringtosend.indexOf("opening#", 0) > -1) | (stringtosend.indexOf("CLOSED#", 0) > -1) | (stringtosend.indexOf("closing#", 0) > -1) )
     {
       if (stringtosend.indexOf("OPEN#", 0) > -1)
       {
         stringtosend = "OPEN#";
       }
 
+      if (stringtosend.indexOf("opening#", 0) > -1)
+      {
+        stringtosend = "opening#";
+      }
+
+
       if (stringtosend.indexOf("CLOSED#", 0) > -1)
       {
         stringtosend = "CLOSED#";
       }
+
+      if (stringtosend.indexOf("closing#", 0) > -1)
+      {
+        stringtosend = "closing#";
+      }
+
       return true;
     }
     else
@@ -366,15 +378,13 @@ void AZaction()
     ReceiveTheResponse();
     az_retry = validate_the_response("AZ");
 
-    //      Serial.print("stringtosend value is ");                       //here
+    //      Serial.print("stringtosend value is ");
     //    Serial.println(stringtosend);
 
 
     if (az_retry)
     {
-      //   Serial.println();
-      //  Serial.print("string ACTUALLY SENT IS ");                       //here
-      //   Serial.println(stringtosend);
+
 
       TransmitToDriver();
     }
@@ -464,7 +474,7 @@ void ConfigureRadio(String Address)                   //call this in Setup and t
   radio.setRetries(15, 15);                  // time between tries and No of tries
   radio.enableDynamicPayloads();             // needs this for acknowledge to work
   radio.openReadingPipe(1, Master_address);  //NEED 1 for shared addresses
-  //new
+
   if (Address == "encod")
   {
     radio.openWritingPipe(Encoder_address);
