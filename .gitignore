@@ -3,7 +3,8 @@
 /Release/
 /.vs/
 /_vm/
-
+/.pio/
+/.vscode/
 
 # Compiled source #
 ###################
@@ -17,6 +18,7 @@
 *.elf
 *.xml
 *.buildinfo
+*.json
 
 # Packages #
 ############
