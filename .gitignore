@@ -1,8 +1,6 @@
 # directories #
-/Debug/
-/Release/
-/.vs/
-/_vm/
+/.vscode/
+/.pio/
 
 
 # Compiled source #
@@ -14,9 +12,7 @@
 *.o
 *.so
 *.hex
-*.elf
-*.xml
-*.buildinfo
+*.json
 
 # Packages #
 ############
