@@ -1,3 +1,4 @@
+//July '21 it looks like this is the currently in use program. Why? becuase of the date below (9-2-20)
 //todo - radio failure has a call to config - which has been commented out - check if this is required and if so what parameter will be passed - encod or shutt
 //Version 4.0 9-2-20 - change the pkversion variable too.
 //this is the MASTER v3 branch created 4-1-2020
