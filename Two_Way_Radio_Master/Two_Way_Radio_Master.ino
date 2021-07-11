@@ -1,3 +1,7 @@
+//Further July 11th '21 note - this Git version is the branch 'based on USB encoder a static backup branch
+// so if you're reading this message this file is probably what was loaded and working on the master radio MCU see comment below.
+//because I was minde to merge the based on USB Encoder branch into the master, i just wanted to save this in case.
+
 //July '21 it looks like this is the currently in use program. Why? becuase of the date below (9-2-20)
 //todo - radio failure has a call to config - which has been commented out - check if this is required and if so what parameter will be passed - encod or shutt
 //Version 4.0 9-2-20 - change the pkversion variable too.
