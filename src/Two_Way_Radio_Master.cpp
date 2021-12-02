@@ -23,15 +23,12 @@
 */
 //
 
-#include <SPI.h>
 
-#include <RF24.h>
-#include <LiquidCrystal.h>
-#include <printf.h>
 
 // initialize the library by associating any needed LCD interface pin
 // with the arduino pin number it is connected to
 
+#include "Two_Way_Radio_Master.h"
 
 const int rs = 27, en = 26, d4 = 25, d5 = 24, d6 = 23, d7 = 22;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
@@ -558,4 +555,4 @@ void CheckforRadioAlwaysAvailableError()
     radio.read(&response, sizeof(response));  //if all well, the read happens on the first iteration of the while loop and radio.available is cleared.
   }
 }
-//need this to stop stino stupid error :insert new code before this line
+
