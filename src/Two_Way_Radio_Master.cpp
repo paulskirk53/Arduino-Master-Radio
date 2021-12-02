@@ -1,3 +1,6 @@
+// this code is an example of extreme complexity because of the needs of the hardware, not because of the application requirements. So I have long wanted
+// to revert to the bluetooth solution which is just so easy by comparison
+// this is the last update to this version which has the NRF24l01 radio in it - goodbye NRF...
 //July '21 it looks like this is the currently in use program. Why? becuase of the date below (9-2-20)
 //todo - radio failure has a call to config - which has been commented out - check if this is required and if so what parameter will be passed - encod or shutt
 //Version 4.0 9-2-20 - change the pkversion variable too.
