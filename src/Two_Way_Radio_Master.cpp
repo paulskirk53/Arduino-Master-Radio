@@ -1,33 +1,31 @@
 
 //this is the Bluetooth-Version-21 v3 branch created 2/12/21
+/* The functions this program has to deliver are:
+
+SEND functions first:
+1 - Send shutter status request "SS"
+2 - Send Open Shutter request   "OS"
+3 - Send Close shutter request  "CS"
+4 - Send emrgency stop request  "ES"
+
+RECEIVE functions:
+1 - Receive Status - can be "OPEN", "CLOSED", "opening", "closing"
 
 
-// initialize the library by associating any needed LCD interface pin
-// with the arduino pin number it is connected to
+*/
 
 #include "Two_Way_Radio_Master.h"
+
+#define ASCOM Serial
+#define Bluetooth Serial2   // connect the HC05 to these Tx and Rx pins
 
 const int rs = 27, en = 26, d4 = 25, d5 = 24, d6 = 23, d7 = 22;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
 
-String ReceivedData  = "";
-String Message       = "";
-String stringtosend  = "";
 String blank         = "                    ";
 String pkversion     = "4.0";
 
-bool tx_sent;
-char theCommand[32]  = "";                    // confusingly, you can initialise a char array in this way, but later in code, it is not possible to assign in this way.
-
-char response[32]    = "";
-
-int azcount          = 0;
-double ssretrycount  = 0;
-double azretrycount  = 0;
-int FailureCount     = 0;
-
-bool timeout = false;
 
 void setup()
 {
@@ -36,10 +34,10 @@ void setup()
   // Print a message to the LCD.
   lcd.setCursor(0, 0);                    //remove - reinstate these 2 commands
   lcd.print("Master Radio V " + pkversion);
-  delay(1000);
+  
 
-  Serial.begin(19200);                       // this module uses the serial channel to Tx/ Rx commands from the Dome driver
-    
+  ASCOM.begin(9600);                       // this module uses the serial channel as ASCOM Tx/ Rx commands from the Dome driver
+  Bluetooth.begin(9600) ;                   // the bluetooth HC05 devices are set as baud 9600, so it's important to match.
   lcdprint(0, 0, "MCU version" + pkversion );
   delay(2000);
 
@@ -49,45 +47,34 @@ void setup()
 void loop()
 {
   
-  
+  //code the send functions first
 
-  if (Serial.available() > 0)                      // the dome driver has sent a command
+  if (ASCOM.available() > 0)                      // the dome driver has sent a command
   {
 
-    ReceivedData = Serial.readStringUntil('#');   // the string does not contain the # character
+    String ASCOMReceipt = ASCOM.readStringUntil('#');   // the string does not contain the # character
 
     //ES
 
-    if (ReceivedData.indexOf("ES", 0) > -1) // THE INDEX VALUE IS the value of the position of the string in receivedData, or -1 if the string not found
+    if (ASCOMReceipt.indexOf("ES", 0) > -1) // THE INDEX VALUE IS the value of the position of the string in receivedData, or -1 if the string not found
     {
-      Message = "ES";                            // need to keep this as receivedData is initialised in calls below
       
-      theCommand[0] = 'E';                             // note single quote use
-      theCommand[1] = 'S';
-      theCommand[2] = '#';
+// TODO remove the test line below
+sendViaASCOM("Emergency stop was received from KB");
 
-      
-      ReceiveTheResponse();
+      sendViaBluetooth("ES");
 
       //   update the LCD
 
       lcdprint(0, 0, "Sent Emergency Stop ");
 
-      lcdprint(8, 1, stringtosend.substring(0, 7));
-
-
-
-      Message = "";
-
     }  //endif received ES
 
 
-    //end ES
-
-   
+     
 
 
-    if (ReceivedData.indexOf("OS", 0) > -1) // THE INDEX VALUE IS the value of the position of the string in receivedData, or -1 if the string not found
+    if (ASCOMReceipt.indexOf("OS", 0) > -1) // THE INDEX VALUE IS the value of the position of the string in receivedData, or -1 if the string not found
     {
 
 // BT.print ("OS#");
@@ -95,47 +82,56 @@ void loop()
       lcdprint(0, 2, blank);
       lcdprint(0, 2, "Sent Open Shutter   ");
       
-    }
+      sendViaBluetooth("OS");
+
+    }// endif OS
 
 
-    if (ReceivedData.indexOf("CS", 0) > -1) // THE INDEX VALUE IS the value of the position of the string in receivedData, or -1 if the string not found
+    if (ASCOMReceipt.indexOf("CS", 0) > -1) // THE INDEX VALUE IS the value of the position of the string in receivedData, or -1 if the string not found
     {
-//BT.print ("CS#");
 
       lcdprint(0, 2, "Sent Close Shutter  ");
-      // lcdprint(0, 1, blank);
-    }
+      sendViaBluetooth("CS");
+
+    }  //endif CS
 
 
-    if (ReceivedData.indexOf("SS", 0) > -1) // THE INDEX VALUE IS the value of the position of the string in receivedData, or -1 if the string not found
+    if (ASCOMReceipt.indexOf("SS", 0) > -1) // THE INDEX VALUE IS the value of the position of the string in receivedData, or -1 if the string not found
     {
 
-      //BT.print ("SS#");
+      sendViaBluetooth("SS");
 
-    }// end if receiveddata
+    }// end if SS
 
-  } //end if serial available
+  } //end if ASCOM available
+
+
+// now check for receipts in response to any commands sent by the code above
+// receipts arrive on Bluetooth
+
+if ( Bluetooth.available() > 0) 
+    {
+      String BluetoothReceipt = Bluetooth.readStringUntil('#');   // the string does not contain the # character
+      // first validate - 
+      //four cases are "OPEN", "CLOSED", "opening", "closing" note case
+
+      bool receiptOK = validate_the_response(BluetoothReceipt);
+
+    if (receiptOK)
+        {
+          sendViaASCOM(BluetoothReceipt);   // if the receipt from the command processor is valid, send it through to the ASCOM driver. otherwise ignore it
+        }
+    }
+
 
 } //end void loop
 
 
-
-
-
-void ReceiveTheResponse()    // this routine reads the radio for an expected transmission
+void sendViaASCOM(String textToSend)
 {
-
-
   
-
-} // end void receivetheresponse
-
-void TransmitToDriver()
-{
-  //Serial.print ("the string sent to driver is ");
-
-  Serial.print (stringtosend);             // print value to serial, for the driver
-  // the string terminator # is already part of the string received from encoder
+  ASCOM.print (textToSend + '#');             // print value to ASCOM, for the driver
+  
 
 
 }   // end void transmit to driver
@@ -152,44 +148,26 @@ void lcdprint(int col, int row, String mess)
 
 bool validate_the_response(String receipt)
 {
-
   
-  if (receipt == "SS")
-  {
-    if ( (stringtosend.indexOf("OPEN#", 0) > -1) | (stringtosend.indexOf("opening#", 0) > -1) | (stringtosend.indexOf("CLOSED#", 0) > -1) | (stringtosend.indexOf("closing#", 0) > -1) )
+    if ( (receipt.indexOf("OPEN", 0) > -1) | (receipt.indexOf("opening", 0) > -1) | (receipt.indexOf("CLOSED", 0) > -1) | (receipt.indexOf("closing", 0) > -1) )
     {
-      if (stringtosend.indexOf("OPEN#", 0) > -1)
-      {
-        stringtosend = "OPEN#";
-      }
-
-      if (stringtosend.indexOf("opening#", 0) > -1)
-      {
-        stringtosend = "opening#";
-      }
-
-
-      if (stringtosend.indexOf("CLOSED#", 0) > -1)
-      {
-        stringtosend = "CLOSED#";
-      }
-
-      if (stringtosend.indexOf("closing#", 0) > -1)
-      {
-        stringtosend = "closing#";
-      }
-
+     
       return true;
     }
     else
     {
       return false;
     }
-  }
+  
 
 }
 
-                                               //end void AZaction
+void sendViaBluetooth(String textToSend)
+{
+  // TODO remove the test line below
+  ASCOM.print("Test textToSend is " + textToSend);
+  Bluetooth.print(textToSend + '#');
+}
 
 
 
