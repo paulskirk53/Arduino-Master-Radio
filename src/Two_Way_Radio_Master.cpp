@@ -34,17 +34,16 @@ void setup()
   lcd.begin(20, 4);
   // Print a message to the LCD.
   lcd.setCursor(0, 0);                    //remove - reinstate these 2 commands
-  lcd.print("Master Radio V " + pkversion);
+  lcd.print(" Master Radio Reset " );     // 20 chars
   
 
   ASCOM.begin(9600);                       // this module uses the serial channel as ASCOM Tx/ Rx commands from the Dome driver
   Bluetooth.begin(9600) ;                  // the bluetooth HC05 devices are set as baud 9600, so it's important to match.
-  lcdprint(0, 0, "MCU version" + pkversion );
+  lcdprint(0, 1, "MCU version" + pkversion );
   delay(2000);                             // gives time to see the message on the LCD
 
+
 wdt_enable(WDTO_4S);                       // Watchdog set to 4 seconds
-
-
 }  // end setup
 
 
@@ -53,11 +52,17 @@ void loop()
   
   //code the send functions first
 
-  if (ASCOM.available() > 0)                      // the dome driver has sent a command
+  if (ASCOM.available() > 0)                          // the dome driver has sent a command
   {
 
-    String ASCOMReceipt = ASCOM.readStringUntil('#');   // the string does not contain the # character
+    String ASCOMReceipt = ASCOM.readStringUntil('#'); // the string does not contain the # character
 
+    // reset the MCU
+    if (ASCOMReceipt.indexOf("reset", 0) > -1)        // note not note note note - this command can only arrive if ASCOM releases the port and the Monitor program send 'reset#'
+      {
+        while(1)                                      // forever loop times out the wdt and causes reset
+        {}
+      }
     //ES
 
     if (ASCOMReceipt.indexOf("ES", 0) > -1) // THE INDEX VALUE IS the value of the position of the string in receivedData, or -1 if the string not found
