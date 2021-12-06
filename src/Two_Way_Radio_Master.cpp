@@ -2,7 +2,7 @@
 //this is the Bluetooth-Version-21 v3 branch created 2/12/21
 /* The functions this program has to deliver are:
 
-SEND functions first:
+ASCOM SEND functions first:
 1 - Send shutter status request "SS"
 2 - Send Open Shutter request   "OS"
 3 - Send Close shutter request  "CS"
@@ -14,6 +14,7 @@ RECEIVE functions:
 
 */
 
+#include <avr/wdt.h>
 #include "Two_Way_Radio_Master.h"
 
 #define ASCOM Serial
@@ -37,9 +38,12 @@ void setup()
   
 
   ASCOM.begin(9600);                       // this module uses the serial channel as ASCOM Tx/ Rx commands from the Dome driver
-  Bluetooth.begin(9600) ;                   // the bluetooth HC05 devices are set as baud 9600, so it's important to match.
+  Bluetooth.begin(9600) ;                  // the bluetooth HC05 devices are set as baud 9600, so it's important to match.
   lcdprint(0, 0, "MCU version" + pkversion );
-  delay(2000);
+  delay(2000);                             // gives time to see the message on the LCD
+
+wdt_enable(WDTO_4S);                       // Watchdog set to 4 seconds
+
 
 }  // end setup
 
@@ -59,8 +63,8 @@ void loop()
     if (ASCOMReceipt.indexOf("ES", 0) > -1) // THE INDEX VALUE IS the value of the position of the string in receivedData, or -1 if the string not found
     {
       
-// TODO remove the test line below
-sendViaASCOM("Emergency stop was received from KB");
+     // TODO remove the test line below
+      sendViaASCOM("Emergency stop was received from KB");
 
       sendViaBluetooth("ES");
 
@@ -77,7 +81,7 @@ sendViaASCOM("Emergency stop was received from KB");
     if (ASCOMReceipt.indexOf("OS", 0) > -1) // THE INDEX VALUE IS the value of the position of the string in receivedData, or -1 if the string not found
     {
 
-// BT.print ("OS#");
+     // BT.print ("OS#");
       
       lcdprint(0, 2, blank);
       lcdprint(0, 2, "Sent Open Shutter   ");
@@ -101,7 +105,7 @@ sendViaASCOM("Emergency stop was received from KB");
 
       sendViaBluetooth("SS");
 
-    }// end if SS
+    }  // end if SS
 
   } //end if ASCOM available
 
@@ -123,6 +127,7 @@ if ( Bluetooth.available() > 0)
         }
     }
 
+  wdt_reset();                       //execute this command within 4 seconds to keep the timer from resetting
 
 } //end void loop
 
