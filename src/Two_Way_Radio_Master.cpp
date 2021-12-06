@@ -3,12 +3,16 @@
 /* The functions this program has to deliver are:
 
 ASCOM SEND functions first:
+Received from the ASCOM driver via USB connection....
 1 - Send shutter status request "SS"
 2 - Send Open Shutter request   "OS"
 3 - Send Close shutter request  "CS"
-4 - Send emrgency stop request  "ES"
+4 - Send emrgency stop request  "ES"      
 
+NON ASCOM Function:
+1 - reset - via the USB ASCOM cable, but not with the ASCOM client connected. i.e. from the Monitor program
 RECEIVE functions:
+Received via Bluetooth from the Command Processor MCU....
 1 - Receive Status - can be "OPEN", "CLOSED", "opening", "closing"
 
 
@@ -58,7 +62,7 @@ void loop()
     String ASCOMReceipt = ASCOM.readStringUntil('#'); // the string does not contain the # character
 
     // reset the MCU
-    if (ASCOMReceipt.indexOf("reset", 0) > -1)        // note not note note note - this command can only arrive if ASCOM releases the port and the Monitor program send 'reset#'
+    if (ASCOMReceipt.indexOf("reset", 0) > -1)        // note NOTE note NOTE note - this command can only arrive if ASCOM releases the port and the Monitor program send 'reset#'
       {
         while(1)                                      // forever loop times out the wdt and causes reset
         {}
