@@ -43,7 +43,7 @@ void setup()
 
   ASCOM.begin(9600);                       // this module uses the serial channel as ASCOM Tx/ Rx commands from the Dome driver
   Bluetooth.begin(9600) ;                  // the bluetooth HC05 devices are set as baud 9600, so it's important to match.
-  lcdprint(0, 1, "MCU version" + pkversion );
+  lcdprint(0, 1, " MCU version " + pkversion );
   delay(2000);                             // gives time to see the message on the LCD
 
 
@@ -64,6 +64,8 @@ void loop()
     // reset the MCU
     if (ASCOMReceipt.indexOf("reset", 0) > -1)        // note NOTE note NOTE note - this command can only arrive if ASCOM releases the port and the Monitor program send 'reset#'
       {
+        sendViaASCOM(" Resetting ");
+        lcdprint(0, 3, "Rec'd' a reset CMD");
         while(1)                                      // forever loop times out the wdt and causes reset
         {}
       }
@@ -79,7 +81,7 @@ void loop()
 
       //   update the LCD
 
-      lcdprint(0, 0, "Sent Emergency Stop ");
+      lcdprint(0, 2, "Sent Emergency Stop ");
 
     }  //endif received ES
 
