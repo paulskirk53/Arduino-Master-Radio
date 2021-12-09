@@ -22,7 +22,7 @@ Received via Bluetooth from the Command Processor MCU....
 #include "Two_Way_Radio_Master.h"
 
 #define ASCOM Serial
-#define Bluetooth Serial2   // connect the HC05 to these Tx and Rx pins
+#define Bluetooth Serial1   // connect the HC05 to these Tx and Rx pins
 
 const int rs = 27, en = 26, d4 = 25, d5 = 24, d6 = 23, d7 = 22;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
@@ -75,7 +75,7 @@ void loop()
     {
       
      // TODO remove the test line below
-      sendViaASCOM("Emergency stop was received from KB");
+      //sendViaASCOM("Emergency stop was received from KB");
 
       sendViaBluetooth("ES");
 
@@ -115,7 +115,7 @@ void loop()
     {
 
       sendViaBluetooth("SS");
-
+      lcdprint(0, 3, "Sent Shutter Status");
     }  // end if SS
 
   } //end if ASCOM available
@@ -165,7 +165,7 @@ void lcdprint(int col, int row, String mess)
 bool validate_the_response(String receipt)
 {
   
-    if ( (receipt.indexOf("OPEN", 0) > -1) | (receipt.indexOf("opening", 0) > -1) | (receipt.indexOf("CLOSED", 0) > -1) | (receipt.indexOf("closing", 0) > -1) )
+    if ( (receipt.indexOf("open", 0) > -1) | (receipt.indexOf("opening", 0) > -1) | (receipt.indexOf("closed", 0) > -1) | (receipt.indexOf("closing", 0) > -1) )
     {
      
       return true;
@@ -181,7 +181,7 @@ bool validate_the_response(String receipt)
 void sendViaBluetooth(String textToSend)
 {
   // TODO remove the test line below
-  ASCOM.print("Test textToSend is " + textToSend);
+ // FOR DEBUG ONLY  ASCOM.print("Test textToSend is " + textToSend);
   Bluetooth.print(textToSend + '#');
 }
 
