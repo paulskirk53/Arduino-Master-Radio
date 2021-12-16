@@ -61,14 +61,23 @@ void loop()
 
     String ASCOMReceipt = ASCOM.readStringUntil('#'); // the string does not contain the # character
 
-    // reset the MCU
-    if (ASCOMReceipt.indexOf("reset", 0) > -1)        // note NOTE note NOTE note - this command can only arrive if ASCOM releases the port and the Monitor program send 'reset#'
+    // reset this MCU:
+    if (ASCOMReceipt.indexOf("reset", 0) > -1)        // note NOTE note NOTE - this command can only arrive if ASCOM releases the port and the Monitor program send 'reset#'
       {
         sendViaASCOM(" Resetting ");
         lcdprint(0, 3, "Rec'd' a reset CMD");
         while(1)                                      // forever loop times out the wdt and causes reset
         {}
       }
+
+   // reset the command processor:
+ if (ASCOMReceipt.indexOf("cprestart", 0) > -1)        // note NOTE note NOTE this command can only arrive if ASCOM releases the port and the Monitor program send 'cprestart'
+      {
+        sendViaASCOM(" Resetting The Command Processor ");
+        lcdprint(0, 3, "Reset CP & shutter  ");
+        sendViaBluetooth("cprestart");
+      }
+
     //ES
 
     if (ASCOMReceipt.indexOf("ES", 0) > -1) // THE INDEX VALUE IS the value of the position of the string in receivedData, or -1 if the string not found
