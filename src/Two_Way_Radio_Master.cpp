@@ -75,7 +75,7 @@ void loop()
       {
         sendViaASCOM(" Resetting The Command Processor ");
         lcdprint(0, 3, "Reset CP & shutter  ");
-        sendViaBluetooth("cprestart");
+        sendViaBluetooth("reset");                      // cp is coded to expect 'reset' - not cprestart as in this program
       }
 
     //ES
