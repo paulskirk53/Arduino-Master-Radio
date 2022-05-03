@@ -65,7 +65,7 @@ void loop()
     if (ASCOMReceipt.indexOf("reset", 0) > -1)        // note NOTE note NOTE - this command can only arrive if ASCOM releases the port and the Monitor program send 'reset#'
       {
         sendViaASCOM(" Resetting ");
-        lcdprint(0, 3, "Rec'd' a reset CMD");
+        lcdprint(0, 3, "Rec'd' a reset CMD  ");
         while(1)                                      // forever loop times out the wdt and causes reset
         {}
       }
@@ -124,7 +124,9 @@ void loop()
     {
 
       sendViaBluetooth("SS");
-      lcdprint(0, 3, "Sent Shutter Status");
+      lcdprint(0, 3, "Sent Shutter Status ");
+      // TODO REMOVE THE LINE BELOW WHICH WAS JUST FOR DEBUG OF CONNECTION PROBLEM  IN MAY 22
+    //  sendViaASCOM("closed#");
     }  // end if SS
 
   } //end if ASCOM available
