@@ -20,6 +20,7 @@ Received via Bluetooth from the Command Processor MCU....
 
 #include <avr/wdt.h>
 #include "Two_Way_Radio_Master.h"
+//#include <LiquidCrystal.h>
 
 #define ASCOM Serial
 #define Bluetooth Serial1   // connect the HC05 to these Tx and Rx pins
