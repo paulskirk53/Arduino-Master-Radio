@@ -62,6 +62,17 @@ void loop()
 
     String ASCOMReceipt = ASCOM.readStringUntil('#'); // the string does not contain the # character
 
+    //*************************************************************************
+    //******** code for MCU Identity process below ****************************
+    //**** Used by the ASCOM driver to identify the COM port in use. **********
+    //*************************************************************************
+    //*************************************************************************
+
+    if (ASCOMReceipt.indexOf("shutter", 0) > -1)
+    {
+      ASCOM.print("shutter#");
+    }
+
     // reset this MCU:
     if (ASCOMReceipt.indexOf("reset", 0) > -1)        // note NOTE note NOTE - this command can only arrive if ASCOM releases the port and the Monitor program send 'reset#'
       {
