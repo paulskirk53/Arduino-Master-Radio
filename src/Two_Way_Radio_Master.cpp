@@ -125,7 +125,7 @@ void loop()
 
     if (ASCOMReceipt.indexOf("CS", 0) > -1) // THE INDEX VALUE IS the value of the position of the string in receivedData, or -1 if the string not found
     {
-
+      lcdprint(0, 2, blank);
       lcdprint(0, 2, "Sent Close Shutter  ");
       sendViaBluetooth("CS");
 
@@ -136,6 +136,7 @@ void loop()
     {
 
       sendViaBluetooth("SS");
+      lcdprint(0, 3, blank);
       lcdprint(0, 3, "Sent Shutter Status ");
       // TODO REMOVE THE LINE BELOW WHICH WAS JUST FOR DEBUG OF CONNECTION PROBLEM  IN MAY 22
     //  sendViaASCOM("closed#");
