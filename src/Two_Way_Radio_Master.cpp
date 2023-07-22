@@ -24,7 +24,7 @@ Received via Bluetooth from the Command Processor MCU....
 
 #define ASCOM Serial
 #define Bluetooth Serial1   // connect the HC05 to these Tx and Rx pins
-
+#define ledtest 5
 const int rs = 27, en = 26, d4 = 25, d5 = 24, d6 = 23, d7 = 22;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
@@ -49,6 +49,7 @@ void setup()
 
 
 wdt_enable(WDTO_4S);                       // Watchdog set to 4 seconds
+wdt_reset();                       //execute this command within 4 seconds to keep the timer from resetting
 }  // end setup
 
 
@@ -61,7 +62,7 @@ void loop()
   {
 
     String ASCOMReceipt = ASCOM.readStringUntil('#'); // the string does not contain the # character
-
+    // ASCOM.print(ASCOMReceipt + '#');
     //*************************************************************************
     //******** code for MCU Identity process below ****************************
     //**** Used by the ASCOM driver to identify the COM port in use. **********
@@ -70,7 +71,8 @@ void loop()
 
     if (ASCOMReceipt.indexOf("shutter", 0) > -1)
     {
-      ASCOM.print("shutter#");
+      sendViaASCOM("shutter");
+      digitalWrite(ledtest, HIGH);
     }
 
     // reset this MCU:
@@ -134,12 +136,14 @@ void loop()
 
     if (ASCOMReceipt.indexOf("SS", 0) > -1) // THE INDEX VALUE IS the value of the position of the string in receivedData, or -1 if the string not found
     {
-
+//todo remove line below
+digitalWrite(ledtest, LOW);
       sendViaBluetooth("SS");
       lcdprint(0, 3, blank);
       lcdprint(0, 3, "Sent Shutter Status ");
       // TODO REMOVE THE LINE BELOW WHICH WAS JUST FOR DEBUG OF CONNECTION PROBLEM  IN MAY 22
-    //  sendViaASCOM("closed#");
+      // sendViaASCOM("closed");  // todo remove this line by commenting out - it is a useful addition as it returns a 'closed' status without needing a bluetooth
+      //connection to the command processor, which is useful for testing the ASCOM driver
     }  // end if SS
 
   } //end if ASCOM available
