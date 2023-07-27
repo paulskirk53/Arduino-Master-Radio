@@ -45,11 +45,12 @@ void setup()
   ASCOM.begin(19200);                      // this module uses the serial channel as ASCOM Tx/ Rx commands from the Dome driver
   Bluetooth.begin(9600) ;                  // the bluetooth HC05 devices are set as baud 9600, so it's important to match.
   lcdprint(0, 1, " MCU version " + pkversion );
-  delay(2000);                             // gives time to see the message on the LCD
+  //  delay(2000);                             // gives time to see the message on the LCD
+  lcdprint(0, 3, blank);
+  lcdprint(0, 3,  "Awaiting BT Receipt");
 
-
-wdt_enable(WDTO_4S);                       // Watchdog set to 4 seconds
-wdt_reset();                       //execute this command within 4 seconds to keep the timer from resetting
+  wdt_enable(WDTO_4S);                       // Watchdog set to 4 seconds
+  wdt_reset();                       //execute this command within 4 seconds to keep the timer from resetting
 }  // end setup
 
 
