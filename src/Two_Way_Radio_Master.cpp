@@ -31,7 +31,7 @@ LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
 String blank         = "                    ";
 String pkversion     = "4.0";
-
+long TMRReceivedBT   = millis(); 
 
 void setup()
 {
@@ -79,7 +79,7 @@ void loop()
     if (ASCOMReceipt.indexOf("reset", 0) > -1)        // note NOTE note NOTE - this command can only arrive if ASCOM releases the port and the Monitor program send 'reset#'
       {
         sendViaASCOM(" Resetting ");
-        lcdprint(0, 3, "Rec'd' a reset CMD  ");
+        lcdprint(0, 3, "Rec'd  a reset CMD  ");
         while(1)                                      // forever loop times out the wdt and causes reset
         {}
       }
@@ -136,11 +136,11 @@ void loop()
 
     if (ASCOMReceipt.indexOf("SS", 0) > -1) // THE INDEX VALUE IS the value of the position of the string in receivedData, or -1 if the string not found
     {
-//todo remove line below
-digitalWrite(ledtest, LOW);
+      //todo remove line below
+      //digitalWrite(ledtest, LOW);
       sendViaBluetooth("SS");
-      lcdprint(0, 3, blank);
-      lcdprint(0, 3, "Sent Shutter Status ");
+      lcdprint(0, 2, blank);
+      lcdprint(0, 2, "Sent Shutter Status ");
       // TODO REMOVE THE LINE BELOW WHICH WAS JUST FOR DEBUG OF CONNECTION PROBLEM  IN MAY 22
       // sendViaASCOM("closed");  // todo remove this line by commenting out - it is a useful addition as it returns a 'closed' status without needing a bluetooth
       //connection to the command processor, which is useful for testing the ASCOM driver
@@ -155,16 +155,34 @@ digitalWrite(ledtest, LOW);
 if ( Bluetooth.available() > 0) 
     {
       String BluetoothReceipt = Bluetooth.readStringUntil('#');   // the string does not contain the # character
-      // first validate - 
+      
+      // print what's returned to the LCD row 3
+      lcdprint(0, 3, blank);
+      lcdprint(0, 3,  "BT Receipt " + BluetoothReceipt);
+
+      //  validate what came back - 
       //four cases are "OPEN", "CLOSED", "opening", "closing" note case
 
       bool receiptOK = validate_the_response(BluetoothReceipt);
 
     if (receiptOK)
         {
-          sendViaASCOM(BluetoothReceipt);   // if the receipt from the command processor is valid, send it through to the ASCOM driver. otherwise ignore it
+          TMRReceivedBT = millis();          // reset the BT detection timer
+          sendViaASCOM(BluetoothReceipt);   // if the receipt from the command processor is valid, send it through to the ASCOM driver
         }
     }
+
+  if ((millis() - TMRReceivedBT)  > 60000 )  // 1 minute timer
+  {
+    lcdprint(0, 0, blank);
+    lcdprint(0, 0,  " No BT in 1 min ");
+    TMRReceivedBT = millis();
+
+    lcdprint(0, 3, blank);
+    lcdprint(0, 3,  "Awaiting BT Receipt");
+  }
+ // CREATE A 2 Minute bluetooth comms receipt check and print this message  '2 minutes of no BT' 
+
 
   wdt_reset();                       //execute this command within 4 seconds to keep the timer from resetting
 
@@ -193,7 +211,7 @@ void lcdprint(int col, int row, String mess)
 bool validate_the_response(String receipt)
 {
   
-    if ( (receipt.indexOf("open", 0) > -1) | (receipt.indexOf("opening", 0) > -1) | (receipt.indexOf("closed", 0) > -1) | (receipt.indexOf("closing", 0) > -1) )
+    if ( (receipt.indexOf("opening", 0) > -1) | (receipt.indexOf("open", 0) > -1) | (receipt.indexOf("closed", 0) > -1) | (receipt.indexOf("closing", 0) > -1) )
     {
      
       return true;
