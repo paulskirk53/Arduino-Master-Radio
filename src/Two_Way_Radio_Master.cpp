@@ -13,7 +13,7 @@ NON ASCOM Function:
 1 - reset - via the USB ASCOM cable, but not with the ASCOM client connected. i.e. from the Monitor program
 RECEIVE functions:
 Received via Bluetooth from the Command Processor MCU....
-1 - Receive Status - can be "OPEN", "CLOSED", "opening", "closing"
+1 - Receive Status - can be "open", "closed", "opening", "closing"
 
 
 */
@@ -162,7 +162,7 @@ if ( Bluetooth.available() > 0)
       lcdprint(0, 3,  "BT Receipt " + BluetoothReceipt);
 
       //  validate what came back - 
-      //four cases are "OPEN", "CLOSED", "opening", "closing" note case
+      //four cases are "open", "closed", "opening", "closing" note case
 
       bool receiptOK = validate_the_response(BluetoothReceipt);
 
@@ -212,7 +212,7 @@ void lcdprint(int col, int row, String mess)
 bool validate_the_response(String receipt)
 {
   
-    if ( (receipt.indexOf("opening", 0) > -1) | (receipt.indexOf("open", 0) > -1) | (receipt.indexOf("closed", 0) > -1) | (receipt.indexOf("closing", 0) > -1) )
+    if ( (receipt.indexOf("opening", 0) > -1) || (receipt.indexOf("open", 0) > -1) || (receipt.indexOf("closed", 0) > -1) || (receipt.indexOf("closing", 0) > -1) )
     {
      
       return true;
