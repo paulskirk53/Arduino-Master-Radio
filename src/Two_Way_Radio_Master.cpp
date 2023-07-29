@@ -30,10 +30,11 @@ LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
 
 String blank         = "                    ";
-String pkversion     = "4.0";
+String pkversion     = "5.0";
 long TMRReceivedBT   = millis(); 
 int statusCount       = 0;
 int BTReceiptCount   = 0;
+int BTMinuteCount    = 0;
 
 void setup()
 {
@@ -149,7 +150,7 @@ void loop()
       sendViaBluetooth("SS");
       lcdprint(0, 2, blank);
       lcdprint(0, 2, "Status Request " + String(statusCount) );
-      
+
       // TODO REMOVE THE LINE BELOW WHICH WAS JUST FOR DEBUG OF CONNECTION PROBLEM  IN MAY 22
       // sendViaASCOM("closed");  // todo remove this line by commenting out - it is a useful addition as it returns a 'closed' status without needing a bluetooth
       //connection to the command processor, which is useful for testing the ASCOM driver
@@ -189,8 +190,14 @@ if ( Bluetooth.available() > 0)
 
   if ((millis() - TMRReceivedBT)  > 60000 )  // 1 minute timer
   {
+    BTMinuteCount++;
+    if (BTMinuteCount >99)
+    {
+      BTMinuteCount=0;
+    }
+
     lcdprint(0, 0, blank);
-    lcdprint(0, 0,  " No BT in 1 min ");
+    lcdprint(0, 0,  " No BT in " + String(BTMinuteCount) + " minutes");
     TMRReceivedBT = millis();
 
     lcdprint(0, 3, blank);
