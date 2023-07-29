@@ -33,6 +33,7 @@ String blank         = "                    ";
 String pkversion     = "4.0";
 long TMRReceivedBT   = millis(); 
 int statusCount       = 0;
+int BTReceiptCount   = 0;
 
 void setup()
 {
@@ -138,11 +139,17 @@ void loop()
 
     if (ASCOMReceipt.indexOf("SS", 0) > -1) // THE INDEX VALUE IS the value of the position of the string in receivedData, or -1 if the string not found
     {
+      statusCount ++;
+      if (statusCount > 99)
+      {
+        statusCount = 0;
+      }
       //todo remove line below
       //digitalWrite(ledtest, LOW);
       sendViaBluetooth("SS");
       lcdprint(0, 2, blank);
-      lcdprint(0, 2, "Sent Shutter Status ");
+      lcdprint(0, 2, "Status Request " + String(statusCount) );
+      
       // TODO REMOVE THE LINE BELOW WHICH WAS JUST FOR DEBUG OF CONNECTION PROBLEM  IN MAY 22
       // sendViaASCOM("closed");  // todo remove this line by commenting out - it is a useful addition as it returns a 'closed' status without needing a bluetooth
       //connection to the command processor, which is useful for testing the ASCOM driver
@@ -157,16 +164,16 @@ void loop()
 if ( Bluetooth.available() > 0) 
     {
       String BluetoothReceipt = Bluetooth.readStringUntil('#');   // the string does not contain the # character
-      statusCount++;
-      if (statusCount > 99)
+      BTReceiptCount ++;
+      if (BTReceiptCount > 99)
       {
-        statusCount = 0;
+        BTReceiptCount = 0;
       }
       // print what's returned to the LCD row 3
       lcdprint(0, 0, blank);      // blank out the BT not received for 1 min message
       lcdprint(0, 0, "Bluetooth connected ");
       lcdprint(0, 3, blank);
-      lcdprint(0, 3,  "BT Rec' " + BluetoothReceipt + String(statusCount));
+      lcdprint(0, 3,  "BT Rec' " + BluetoothReceipt + String(BTReceiptCount));
 
       //  validate what came back - 
       //four cases are "open", "closed", "opening", "closing" note case
