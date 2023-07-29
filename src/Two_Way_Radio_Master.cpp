@@ -32,6 +32,7 @@ LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 String blank         = "                    ";
 String pkversion     = "4.0";
 long TMRReceivedBT   = millis(); 
+int statusCount       = 0;
 
 void setup()
 {
@@ -156,10 +157,16 @@ void loop()
 if ( Bluetooth.available() > 0) 
     {
       String BluetoothReceipt = Bluetooth.readStringUntil('#');   // the string does not contain the # character
-      
+      statusCount++;
+      if (statusCount > 99)
+      {
+        statusCount = 0;
+      }
       // print what's returned to the LCD row 3
+      lcdprint(0, 0, blank);      // blank out the BT not received for 1 min message
+      lcdprint(0, 0, "Bluetooth connected ");
       lcdprint(0, 3, blank);
-      lcdprint(0, 3,  "BT Receipt " + BluetoothReceipt);
+      lcdprint(0, 3,  "BT Rec' " + BluetoothReceipt + String(statusCount));
 
       //  validate what came back - 
       //four cases are "open", "closed", "opening", "closing" note case
