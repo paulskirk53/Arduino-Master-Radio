@@ -78,8 +78,8 @@ void loop()
       sendViaASCOM("shutter");
       digitalWrite(ledtest, HIGH);
     }
-
-    // reset this MCU:
+     
+    // reset this MCU  - A NON ASCOM command wich means it must be rec'd via a terminal e.g. arduino Sermon
     if (ASCOMReceipt.indexOf("reset", 0) > -1)        // note NOTE note NOTE - this command can only arrive if ASCOM releases the port and the Monitor program send 'reset#'
       {
         sendViaASCOM(" Resetting ");
@@ -88,45 +88,42 @@ void loop()
         {}
       }
 
-   // reset the command processor:
- if (ASCOMReceipt.indexOf("cprestart", 0) > -1)        // note NOTE note NOTE this command can only arrive if ASCOM releases the port and the Monitor program send 'cprestart'
+      // reset the command processor - A NON ASCOM command wich means it must be rec'd via a terminal e.g. arduino Sermon
+    if (ASCOMReceipt.indexOf("cprestart", 0) > -1)        // 
       {
         sendViaASCOM(" Resetting The Command Processor ");
         lcdprint(0, 3, "Reset CP & shutter  ");
         sendViaBluetooth("reset");                      // cp is coded to expect 'reset' - not cprestart as in this program
       }
 
-    //ES
+     //ES
 
     if (ASCOMReceipt.indexOf("ES", 0) > -1) // THE INDEX VALUE IS the value of the position of the string in receivedData, or -1 if the string not found
-    {
-      
-     // TODO remove the test line below
-      //sendViaASCOM("Emergency stop was received from KB");
+      {
+        
+        sendViaBluetooth("ES");  // sent to command processor
 
-      sendViaBluetooth("ES");
+        //   update the LCD
 
-      //   update the LCD
+        lcdprint(0, 2, "Sent Emergency Stop ");
+        delay(1000);
+        lcdprint(0, 2, "Resetting Radios    ");
+        while(1)                                      // forever loop times out the wdt and causes reset
+          {}
 
-      lcdprint(0, 2, "Sent Emergency Stop ");
-
-    }  //endif received ES
-
-
-     
-
+      }  //endif received ES
 
     if (ASCOMReceipt.indexOf("OS", 0) > -1) // THE INDEX VALUE IS the value of the position of the string in receivedData, or -1 if the string not found
-    {
+      {
 
-     // BT.print ("OS#");
-      
-      lcdprint(0, 2, blank);
-      lcdprint(0, 2, "Sent Open Shutter   ");
-      
-      sendViaBluetooth("OS");
+      // BT.print ("OS#");
+        
+        lcdprint(0, 2, blank);
+        lcdprint(0, 2, "Sent Open Shutter   ");
+        
+        sendViaBluetooth("OS");
 
-    }// endif OS
+      }// endif OS
 
 
     if (ASCOMReceipt.indexOf("CS", 0) > -1) // THE INDEX VALUE IS the value of the position of the string in receivedData, or -1 if the string not found
