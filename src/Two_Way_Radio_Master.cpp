@@ -107,10 +107,8 @@ void loop()
 
         lcdprint(0, 2, "Sent Emergency Stop ");
         delay(1000);
-        lcdprint(0, 2, "Resetting Radios    ");
-        while(1)                                      // forever loop times out the wdt and causes reset
-          {}
-
+        
+        
       }  //endif received ES
 
     if (ASCOMReceipt.indexOf("OS", 0) > -1) // THE INDEX VALUE IS the value of the position of the string in receivedData, or -1 if the string not found
