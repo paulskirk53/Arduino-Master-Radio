@@ -171,7 +171,7 @@ if ( Bluetooth.available() > 0)
       lcdprint(0, 0, blank);      // blank out the BT not received for 1 min message
       lcdprint(0, 0, "Bluetooth connected ");
       lcdprint(0, 3, blank);
-      lcdprint(0, 3,  "BT Rec' " + BluetoothReceipt + String(BTReceiptCount));
+      lcdprint(0, 3,  "BT Rec' " + BluetoothReceipt + " " + String(BTReceiptCount));
 
       //  validate what came back - 
       //four cases are "open", "closed", "opening", "closing" note case
