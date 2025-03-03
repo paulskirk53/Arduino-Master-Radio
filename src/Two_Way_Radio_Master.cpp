@@ -7,7 +7,7 @@ Received from the ASCOM driver via USB connection....
 1 - Send shutter status request "SS"
 2 - Send Open Shutter request   "OS"
 3 - Send Close shutter request  "CS"
-4 - Send emrgency stop request  "ES"      
+4 - Send emrgency stop request  "ES"  .    
 
 NON ASCOM Function:
 1 - reset - via the USB ASCOM cable, but not with the ASCOM client connected. i.e. from the Monitor program
@@ -147,8 +147,8 @@ void loop()
       lcdprint(0, 2, "Status Request " + String(statusCount) );
 
       // TODO REMOVE THE LINE BELOW WHICH WAS JUST FOR DEBUG OF CONNECTION PROBLEM  IN MAY 22
-      // sendViaASCOM("closed");  // todo remove this line by commenting out - it is a useful addition as it returns a 'closed' status without needing a bluetooth
-      //connection to the command processor, which is useful for testing the ASCOM driver
+       sendViaASCOM("open");  // todo remove this line by commenting out - it is a useful addition as it returns a 'open' status without needing a bluetooth
+      //connection to the command processor, which is useful for testing / fooling the ASCOM driver
     }  // end if SS
 
   } //end if ASCOM available
