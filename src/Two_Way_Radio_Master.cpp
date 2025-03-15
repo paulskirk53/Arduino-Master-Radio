@@ -52,6 +52,8 @@ void setup()
   lcdprint(0, 3, blank);
   lcdprint(0, 3,  "Awaiting BT Receipt");
 
+  sendViaBluetooth("CONNECT");         // this is used to test if BT cnnection is available. The shutter sends OK in response and this shoud appear on the master radio lcd if connection works.
+
   wdt_enable(WDTO_4S);                       // Watchdog set to 4 seconds
   wdt_reset();                       //execute this command within 4 seconds to keep the timer from resetting
 }  // end setup
@@ -165,6 +167,7 @@ if ( Bluetooth.available() > 0)
       {
         BTReceiptCount = 0;
       }
+      
       // print what's returned to the LCD row 3
       lcdprint(0, 0, blank);      // blank out the BT not received for 1 min message
       lcdprint(0, 0, "Bluetooth connected ");
