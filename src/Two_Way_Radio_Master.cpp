@@ -25,6 +25,11 @@ Received via Bluetooth from the Command Processor MCU....
 #define ASCOM Serial
 #define Bluetooth Serial1   // connect the HC05 to these Tx and Rx pins
 #define ledtest 5
+#define shutterStateSwitch 6            // the reason for this switch is to have user control over whether open or closed is report to the ASCOM driver in case the Bluetooth radio fails
+                                        // radio failure is a dealbreaker and no imaging would be possible.
+#define shutterStateSwitchMormal HIGH   // shutterStateSwitch Normal is normal operation where the software reports the shutter state returned by the Shutter MCU 
+#define shutterStateSwitchOverride LOW  // shutterStateSwitch override is where the radio assumes the shutter is open and reports that to the ASCOM driver 
+
 const int rs = 27, en = 26, d4 = 25, d5 = 24, d6 = 23, d7 = 22;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 
@@ -77,7 +82,7 @@ void loop()
 
     if (ASCOMReceipt.indexOf("shutter", 0) > -1)
     {
-      sendViaASCOM("shutter");
+      sendViaASCOM("shutter");         // this is an MCU identification code
       digitalWrite(ledtest, HIGH);
     }
      
@@ -142,15 +147,15 @@ void loop()
       {
         statusCount = 0;
       }
-      //todo remove line below
-      //digitalWrite(ledtest, LOW);
+
       sendViaBluetooth("SS");
       lcdprint(0, 2, blank);
       lcdprint(0, 2, "Status Request " + String(statusCount) );
 
-      // TODO REMOVE THE LINE BELOW WHICH WAS JUST FOR DEBUG OF CONNECTION PROBLEM  IN MAY 22
-       sendViaASCOM("open");  // todo remove this line by commenting out - it is a useful addition as it returns a 'open' status without needing a bluetooth
-      //connection to the command processor, which is useful for testing / fooling the ASCOM driver
+      if (shutterStateSwitch == shutterStateSwitchOverride)   // if the switch on the front of the radio box is in the override position, status is overriden to 'open'
+      {
+       sendViaASCOM("open");  // return 'open' to the ASCOM driver
+      }
     }  // end if SS
 
   } //end if ASCOM available
@@ -179,7 +184,7 @@ if ( Bluetooth.available() > 0)
 
       bool receiptOK = validate_the_response(BluetoothReceipt);
 
-    if (receiptOK)
+    if (receiptOK)                           // valid receipts are open, closed, opening, closing.
         {
           TMRReceivedBT = millis();          // reset the BT detection timer
           sendViaASCOM(BluetoothReceipt);   // if the receipt from the command processor is valid, send it through to the ASCOM driver
