@@ -49,6 +49,7 @@ void setup()
   lcd.setCursor(0, 0);                    //remove - reinstate these 2 commands
   lcd.print(" Master Radio Reset " );     // 20 chars
   
+  pinMode(shutterStateSwitch, INPUT_PULLUP);
 
   ASCOM.begin(19200);                      // this module uses the serial channel as ASCOM Tx/ Rx commands from the Dome driver
   Bluetooth.begin(9600) ;                  // the bluetooth HC05 devices are set as baud 9600, so it's important to match.
@@ -151,8 +152,9 @@ void loop()
       sendViaBluetooth("SS");
       lcdprint(0, 2, blank);
       lcdprint(0, 2, "Status Request " + String(statusCount) );
+       // ASCOM.println(digitalRead(shutterStateSwitch));   // TESTING ONLY
 
-      if (shutterStateSwitch == shutterStateSwitchOverride)   // if the switch on the front of the radio box is in the override position, status is overriden to 'open'
+      if (digitalRead(shutterStateSwitch) == shutterStateSwitchOverride)   // if the switch on the front of the radio box is in the override position, status is overriden to 'open'
       {
        sendViaASCOM("open");  // return 'open' to the ASCOM driver
       }
