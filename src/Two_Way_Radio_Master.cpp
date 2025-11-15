@@ -79,8 +79,8 @@ void loop()
     //**** Used by the ASCOM driver to identify the COM port in use. **********
     //*************************************************************************
     //*************************************************************************
-
-    if (ASCOMReceipt.indexOf("shutter", 0) > -1)
+   if (ASCOMReceipt.indexOf("shutter", 0) > -1 || ASCOMReceipt.indexOf("identify", 0) > -1)
+   // if (ASCOMReceipt.indexOf("shutter", 0) > -1)
     {
       sendViaASCOM("shutter"); // this is an MCU identification code
       digitalWrite(ledtest, HIGH);
