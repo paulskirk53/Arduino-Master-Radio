@@ -159,6 +159,11 @@ void loop()
         lcdprint(0, 1, "Report Shutter open ");  // message length 20
         
       }
+      else
+      {
+        lcdprint(0, 1, blank);
+        lcdprint(0, 1, "No shuuter override");  // message length 20
+      }
     } // end if SS
 
   } // end if ASCOM available
