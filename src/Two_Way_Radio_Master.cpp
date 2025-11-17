@@ -152,9 +152,12 @@ void loop()
       
       // if Bluetooth is not connected and the switch
       // on the front of the radio box is in the override position, status is overriden to 'open'
-      if ( (BTConnected ==false) && (digitalRead(shutterStateSwitch) == shutterStateSwitchOverride)) 
+      if (digitalRead(shutterStateSwitch) == shutterStateSwitchOverride) 
       {
         sendViaASCOM("open"); // return 'open' to the ASCOM driver
+        lcdprint(0, 1, blank);
+        lcdprint(0, 1, "Report Shutter open ");  // message length 20
+        
       }
     } // end if SS
 
