@@ -195,18 +195,21 @@ void loop()
     {
       TMRReceivedBT = millis();       // reset the BT detection timer
       sendViaASCOM(BluetoothReceipt); // if the receipt from the command processor is valid, send it through to the ASCOM driver
+
     }
 
     if ( BluetoothReceipt.indexOf("CONNECTED", 0) > -1)
     {
       BTConnected =true;
     }
+    BTMinuteCount=0; //reset the minute counter which measures the BT disconnected elapsed time
+
   }   // endif bluetooth available
 
   if ((millis() - TMRReceivedBT) > 60000) // 1 minute timer
   {
     BTMinuteCount++;
-    if (BTMinuteCount > 99)
+    if (BTMinuteCount > 99 )
     {
       BTMinuteCount = 0;
     }
