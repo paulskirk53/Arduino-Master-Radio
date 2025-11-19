@@ -54,7 +54,7 @@ void setup()
   ASCOM.begin(19200);    // this module uses the serial channel as ASCOM Tx/ Rx commands from the Dome driver
   Bluetooth.begin(9600); // the bluetooth HC05 devices are set as baud 9600, so it's important to match.
   lcdprint(0, 1, " MCU version " + pkversion);
-  //  delay(2000);                             // gives time to see the message on the LCD
+  delay(500);                             // serial & BT setup time
   lcdprint(0, 3, blank);
   lcdprint(0, 3, "Awaiting BT Receipt");
 
