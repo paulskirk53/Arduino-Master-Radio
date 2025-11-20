@@ -157,7 +157,7 @@ void loop()
         sendViaASCOM("open"); // return 'open' to the ASCOM driver
         lcdprint(0, 1, blank);
         lcdprint(0, 1, "Report Shutter open ");  // message length 20
-        
+        // perhaps disable BT if we're using override as don't want duplication of response to e.g. SS#
       }
       else
       {
