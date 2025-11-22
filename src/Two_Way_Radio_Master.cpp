@@ -36,10 +36,18 @@ LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 String blank = "                    ";
 String pkversion = "5.0";
 long TMRReceivedBT = millis();
+long TMRNoASCOM= millis();
 int statusCount = 0;
 int BTReceiptCount = 0;
 int BTMinuteCount = 0;
 bool BTConnected = false;
+
+// code below to detect ascom timeout (stopped receiving ascom commands)
+unsigned long lastRequestTime = 0;
+const unsigned long timeoutInterval = 10000; // 10 seconds
+bool ascomConnected = true;
+////////////////////////////////////////
+
 
 void setup()
 {
@@ -62,6 +70,10 @@ void setup()
 
   wdt_enable(WDTO_4S); // Watchdog set to 4 seconds
   wdt_reset();         // execute this command within 4 seconds to keep the timer from resetting
+
+  lastRequestTime = millis();    // part of ascom timeout detection
+
+
 } // end setup
 
 void loop()
@@ -73,6 +85,12 @@ void loop()
   {
 
     String ASCOMReceipt = ASCOM.readStringUntil('#'); // the string does not contain the # character
+    lastRequestTime = millis(); // Reset timer on valid request - part of ascom timeout code
+    ascomConnected = true;      // - part of ascom timeout code
+    lcdprint(0,2,blank);       //- part of ascom timeout code
+
+
+
     // ASCOM.print(ASCOMReceipt + '#');
     //*************************************************************************
     //******** code for MCU Identity process below ****************************
@@ -174,6 +192,7 @@ void loop()
   if (Bluetooth.available() > 0)
   {
     String BluetoothReceipt = Bluetooth.readStringUntil('#'); // the string does not contain the # character
+    String lastBTReceipt;                                     // this is a fallback in case the BT connection dies todo evaluate concequences of doing this
     BTReceiptCount++;
     if (BTReceiptCount > 99)
     {
@@ -193,9 +212,14 @@ void loop()
 
     if (receiptOK) // valid receipts are open, closed, opening, closing.
     {
+      lastBTReceipt=BluetoothReceipt;
       TMRReceivedBT = millis();       // reset the BT detection timer
       sendViaASCOM(BluetoothReceipt); // if the receipt from the command processor is valid, send it through to the ASCOM driver
-
+      // record the last receipt here with global var lastBTReceipt= BluetoothReceipt
+    }
+    else
+    {
+      sendViaASCOM(lastBTReceipt); 
     }
 
     if ( BluetoothReceipt.indexOf("CONNECTED", 0) > -1)
@@ -213,6 +237,11 @@ void loop()
     {
       BTMinuteCount = 0;
     }
+/*
+bear in mind the code below does not necessarily mean a bluetooth fault - NO BT could be because there's been no ascom request
+i.e. an ascom serial fault?
+*/
+
 
     lcdprint(0, 0, blank);
     lcdprint(0, 0, " No BT in " + String(BTMinuteCount) + " minutes");
@@ -224,6 +253,19 @@ void loop()
   // CREATE A 2 Minute bluetooth comms receipt check and print this message  '2 minutes of no BT'
 
   wdt_reset(); // execute this command within 4 seconds to keep the timer from resetting
+
+
+ // Check for timeout
+  if (millis() - lastRequestTime > timeoutInterval && ascomConnected) 
+  {
+    ascomConnected = false;
+    // Trigger alert, update LCD, or log status
+    lcdprint(0,2, "ASCOM lost          ");
+  }
+
+
+
+
 
 } // end void loop
 
